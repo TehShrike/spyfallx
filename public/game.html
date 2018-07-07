@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>
+			Spyfall X
+		</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+	</head>
+	<body data-loading=true>
+		<h1>Spyfall X</h1>
+
+		<div class="loading">Loading...</div>
+
+		<div class="done-loading">
+			<h2>Players in the game</h2>
+			<div class="players"></div>
+
+		</div>
+
+		<script>
+			const loadGameState = async () => {
+				const request = await fetch('/api/create', {
+					method: 'POST'
+				})
+
+				const { gameId } = await request.json()
+				console.log('gameId', gameId)
+			}
+		</script>
+
+		<link rel="stylesheet" href="/styles/basic.css">
+	</body>
+</html>
