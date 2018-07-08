@@ -28,6 +28,7 @@
     "del-cli": "^1.1.0",
     "gamblers-dice": "1.0.1",
     "glob-module-file": "2.2.0",
+    "hard-rejection": "1.0.0",
     "hash-brown-router": "^3.4.0",
     "just-uuid4": "1.0.0",
     "koa": "^2.5.0",

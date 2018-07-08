@@ -1,4 +1,4 @@
-require(`loud-rejection/register`)
+require(`hard-rejection/register`)
 
 const pify = require(`pify`)
 const Koa = require(`koa`)
@@ -18,7 +18,6 @@ const locations = require(`../shared/locations.js`)
 const makeShuffler = require(`./shuffler.js`)
 
 const relative = path => require(`path`).join(__dirname, path)
-const staticPath = relative(`../public/static`)
 const buildPath = relative(`../public/build`)
 const publicPath = relative(`../public`)
 
@@ -80,9 +79,15 @@ const addPlayerToGame = async(client, gameId, playerSecret) => client.sadd(
 	await getPlayerId(client, playerSecret)
 )
 
-const setPlayerName = async(client, playerSecret, name) => {
+const setPlayerNameWithPlayerSecret = async(client, playerSecret, name) => {
 	const playerId = await getPlayerId(client, playerSecret)
+	console.log(`got player id`, playerId)
+	await setPlayerNameWithPlayerId(client, playerId, name)
+}
+
+const setPlayerNameWithPlayerId = async(client, playerId, name) => {
 	await client.set(playerNameKey(playerId), name)
+	console.log(`set the player name using id`)
 }
 
 const getPlayerName = async(client, playerId) => await client.get(playerNameKey(playerId))
@@ -124,10 +129,25 @@ const createPlayer = async(client, name) => {
 	const playerId = makeUuid()
 	const playerSecret = makeUuid()
 
-	await Promise.all([
-		setPlayerName(client, playerSecret, name),
-		client.set(playerIdKey(playerSecret), playerId),
-	])
+	console.log(`calling the two functions`)
+
+	await setPlayerNameWithPlayerId(client, playerId, name)
+
+	console.log(`done with setPlayerName`)
+
+	await client.set(playerIdKey(playerSecret), playerId)
+
+	console.log(`done with set`)
+
+	// await Promise.all([
+	// 	setPlayerName(client, playerSecret, name),
+	// 	client.set(playerIdKey(playerSecret), playerId),
+	// ])
+
+	console.log(`createPlayer returning`, {
+		playerId,
+		playerSecret,
+	})
 
 	return {
 		playerId,
@@ -228,6 +248,12 @@ async function startGame(client, gameId) {
 	])
 }
 
+const runWithRedis = async fn => {
+	const client = await getRedis()
+	await fn(client)
+	client.quit()
+}
+
 function startServer(port) {
 	const app = new Koa()
 
@@ -238,101 +264,100 @@ function startServer(port) {
 
 	app.use(createRouter({
 		GET: {
-			'/static/:path(.+)': async context => {
-				await send(context, context.params.path, { root: staticPath })
-			},
 			'/build/:path(.+)': async context => {
 				await send(context, context.params.path, { root: buildPath })
 			},
 			'api/game/:gameId/player/:playerSecret': async context => {
 				const { gameId, playerSecret } = context.params
 
-				const client = await getRedis()
-				context.body = await getPlayerGameInformation(client, gameId, playerSecret)
-				client.quit()
+				await runWithRedis(async client => {
+					context.body = await getPlayerGameInformation(client, gameId, playerSecret)
+				})
 			},
 			'api/player-id/:playerSecret': async context => {
-				const client = await getRedis()
-
 				const { playerSecret } = context.params
 
-				const playerId = await getPlayerId(client, playerSecret)
+				await runWithRedis(async client => {
+					const playerId = await getPlayerId(client, playerSecret)
 
-				context.body = {
-					authed: !!playerId,
-					playerId,
-				}
-
-				client.quit()
+					context.body = {
+						authed: !!playerId,
+						playerId,
+					}
+				})
 			},
 			'/': async context => {
 				await send(context, `index.html`, { root: publicPath })
+			},
+			'/:path(.+)': async context => {
+				await send(context, context.params.path, { root: publicPath })
 			},
 		},
 		POST: {
 			'api/set-name': async context => {
 				const { name, playerSecret } = context.request.body
 
-				const client = await getRedis()
-
-				await setPlayerName(client, playerSecret, name)
-
-				client.quit()
+				await runWithRedis(async client => {
+					await setPlayerNameWithPlayerSecret(client, playerSecret, name)
+				})
 			},
 			'/api/create': async context => {
-				const client = await getRedis()
-				const gameId = await createGame(client)
-				client.quit()
+				await runWithRedis(async client => {
+					const gameId = await createGame(client)
 
-				context.body = {
-					gameId,
-				}
+					context.body = {
+						gameId,
+					}
+				})
 			},
 			'/api/join-game': async context => {
 				const { gameId, playerSecret } = context.request.body
-				const client = await getRedis()
-				await addPlayerToGame(client, gameId, playerSecret)
-				client.quit()
+
+				await runWithRedis(async client => {
+					await addPlayerToGame(client, gameId, playerSecret)
+				})
 			},
 			'api/start-game': async context => {
 				const { gameId, playerSecret } = context.request.body
-				const client = await getRedis()
-				const authed = await playerIsAuthedToGame(client, playerSecret)
 
-				if (authed) {
-					await startGame(client, gameId)
-				}
+				await runWithRedis(async client => {
+					const authed = await playerIsAuthedToGame(client, playerSecret)
 
-				client.quit()
-				context.body = {
-					success: authed,
-				}
+					if (authed) {
+						await startGame(client, gameId)
+					}
+
+					context.body = {
+						success: authed,
+					}
+				})
 			},
 			'/api/stop-game': async context => {
 				const { gameId, playerSecret } = context.request.body
-				const client = await getRedis()
 
-				const authed = await playerIsAuthedToGame(client, playerSecret)
+				await runWithRedis(async client => {
+					const authed = await playerIsAuthedToGame(client, playerSecret)
 
-				if (authed) {
-					await stopGame(client, gameId)
-				}
-
-				client.quit()
+					if (authed) {
+						await stopGame(client, gameId)
+					}
+				})
 			},
 			'/api/create-player': async context => {
-				const client = await getRedis()
-
 				const { name } = context.request.body
 
-				const { playerId, playerSecret } = createPlayer(client, name)
-
-				context.body = {
-					playerId,
-					playerSecret,
+				if (!name) {
+					throw new Error(`Invalid name passed to create-player: ${ name }`)
 				}
 
-				client.quit()
+				await runWithRedis(async client => {
+					const { playerId, playerSecret } = await createPlayer(client, name)
+
+					context.body = {
+						playerId,
+						playerSecret,
+					}
+				})
 			},
 		},
 	}, { set404: true }))

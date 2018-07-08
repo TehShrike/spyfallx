@@ -37,6 +37,9 @@
 			const PLAYER_NAME_KEY = `playerName`
 			const body = document.body
 
+			// should probably be able to create a player without a name
+			// only need to assign a name to the player before joining the game
+
 			const initialPlayerName = localStorage.getItem(PLAYER_NAME_KEY)
 
 			const playerNameElement = document.getElementById(`player-name`)
@@ -53,8 +56,15 @@
 
 			const post = (url, body) => fetch(url, { method: `POST`, body })
 
-			const createPlayer = async() => {
-				const { playerId, playerSecret } = await post(`/api/create-player`)
+			const createPlayer = async name => {
+				const { playerId, playerSecret } = await post(`/api/create-player`, {
+					name,
+				})
+
+				if (!playerSecret || !playerId) {
+					throw new Error(`Didn't get player secret or id back from server.  id: ${ playerId }, secret: ${ playerSecret } }`)
+				}
+
 				localStorage.setItem(PLAYER_SECRET_KEY, playerSecret)
 				return { playerId, playerSecret }
 			}
@@ -63,6 +73,7 @@
 				let playerSecret = localStorage.getItem(PLAYER_SECRET_KEY)
 
 				if (playerSecret) {
+					console.log(`found player secret`, playerSecret)
 					const { authed, playerId } = await fetch(`api/player-id/${ playerSecret }`)
 					if (authed) {
 						return {
@@ -111,7 +122,7 @@
 			}
 
 			window.on(`unhandledrejection`, event => {
-				console.error(reason)
+				console.error(event.reason)
 			})
 		</script>
 
