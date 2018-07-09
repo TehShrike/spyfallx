@@ -1,3 +1,5 @@
+<strong>Game code: {gameId}</strong>
+
 {#if role && location}
 	{#if role === `Spy`}
 		<h2>You're the spy!</h2>
@@ -43,6 +45,7 @@
 export default {
 	data() {
 		return {
+			gameId: null,
 			role: null,
 			location: null,
 			gameActive: null,

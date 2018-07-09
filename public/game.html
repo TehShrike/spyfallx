@@ -48,11 +48,15 @@
 				return o
 			}
 
+			const { gameId } = params()
+
 			const view = new GameState({
 				target: document.getElementById(`game-state-target`),
+				data: {
+					gameId,
+				},
 			})
 
-			const { gameId } = params()
 			const init = async() => {
 				const { playerId, playerSecret } = await getPlayerDeetz()
 
