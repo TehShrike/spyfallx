@@ -77,15 +77,25 @@ const getGameActive = async(client, gameId) => {
 }
 
 const getPlayerId = (client, playerSecret) => client.get(playerIdKey(playerSecret))
+const getPlayerIdOrThrow = async(client, playerSecret) => {
+	const playerId = await getPlayerId(client, playerSecret)
+
+	if (!playerId) {
+		throw new Error(`No playerId found for player secret ${ playerSecret }`)
+	}
+
+	return playerId
+}
 
 const addPlayerToGame = async(client, gameId, playerSecret) => {
-	const playerId = await getPlayerId(client, playerSecret)
+	const playerId = await getPlayerIdOrThrow(client, playerSecret)
 
 	await client.sadd(gamePlayersKey(gameId), playerId)
 }
 
 const setPlayerNameWithPlayerSecret = async(client, playerSecret, name) => {
-	const playerId = await getPlayerId(client, playerSecret)
+	const playerId = await getPlayerIdOrThrow(client, playerSecret)
+
 	await setPlayerNameWithPlayerId(client, playerId, name)
 }
 

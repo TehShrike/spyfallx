@@ -20,10 +20,10 @@
 
 		<label>
 			Game id:
-			<input type="text" placeholder="abefi">
+			<input type="text" placeholder="abefi" id=game-id>
 		</label>
 
-		<button>Join game</button>
+		<button id=join-game>Join game</button>
 
 		<style>
 			[data-username-filled=false] #create-new-game {
@@ -40,6 +40,9 @@
 			const body = document.body
 
 			const CREATE_NEW_GAME_BUTTON_ID = `create-new-game`
+			const JOIN_GAME_BUTTON_ID = `join-game`
+			const NAME_INPUT_ID = `player-name`
+			const GAME_ID_INPUT_ID = `game-id`
 
 			const on = (id, event, fn) => {
 				const e = document.getElementById(id)
@@ -50,7 +53,7 @@
 			const init = async() => {
 				const initialPlayerName = localStorage.getItem(PLAYER_NAME_KEY)
 
-				const playerNameElement = document.getElementById(`player-name`)
+				const playerNameElement = document.getElementById(NAME_INPUT_ID)
 
 				const updateUsernameFilled = () => {
 					body.dataset.dataUsernameFilled = !!playerNameElement.value
@@ -77,18 +80,14 @@
 				return gameId
 			}
 
-			on(CREATE_NEW_GAME_BUTTON_ID, `click`, async() => {
-				const [
-					{ playerId, playerSecret },
-					gameId,
-				] = await Promise.all([
-					playerDeetzPromise,
-					createGameId(),
-				])
+			const setNameAndJoinGame = async({ gameId }) => {
+				const { playerSecret } = await playerDeetzPromise
+
+				console.log(`setting name to`, document.getElementById(NAME_INPUT_ID).value)
 
 				await Promise.all([
 					post(`/api/set-name`, {
-						name: document.getElementById(`player-name`).value,
+						name: document.getElementById(NAME_INPUT_ID).value,
 						playerSecret,
 					}),
 					post(`/api/join-game`, {
@@ -98,6 +97,20 @@
 				])
 
 				document.location = `game.html?gameId=${ gameId }`
+			}
+
+			on(CREATE_NEW_GAME_BUTTON_ID, `click`, async() => {
+				await setNameAndJoinGame({
+					gameId: await createGameId(),
+				})
+			})
+
+			on(JOIN_GAME_BUTTON_ID, `click`, async() => {
+				const gameId = document.getElementById(GAME_ID_INPUT_ID).value
+
+				await setNameAndJoinGame({
+					gameId,
+				})
 			})
 
 			init()
