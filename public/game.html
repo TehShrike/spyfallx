@@ -13,20 +13,83 @@
 		<div class="loading">Loading...</div>
 
 		<div class="done-loading">
-			<h2>Players in the game</h2>
-			<div class="players"></div>
-
+			<div id="game-state-target"></div>
 		</div>
 
-		<script>
-			const loadGameState = async () => {
-				const request = await fetch('/api/create', {
-					method: 'POST'
+		<style>
+			.loading, .done-loading {
+				display: none;
+			}
+
+			[data-loading=true] .loading {
+				display: initial;
+			}
+			[data-loading=false] .done-loading {
+				display: initial;
+			}
+		</style>
+
+		<script type=module>
+			import { futch, post } from './futch.js'
+			import getPlayerDeetz from './get-player-deetz.js'
+			import GameState from './build/game-state.js'
+			import locationMap from './build/locations.js'
+
+			const POLLING_INTERVAL = 1000
+
+			const params = () => {
+				const searchParams = new URLSearchParams(document.location.search)
+
+				const o = Object.create(null)
+				for (const [ key, value ] of searchParams.entries()) {
+					o[key] = value
+				}
+
+				return o
+			}
+
+			const view = new GameState({
+				target: document.getElementById(`game-state-target`),
+			})
+
+			const { gameId } = params()
+			const init = async() => {
+				const { playerId, playerSecret } = await getPlayerDeetz()
+
+				view.set({
+					playerId,
+					locationNames: Object.keys(locationMap),
 				})
 
-				const { gameId } = await request.json()
-				console.log('gameId', gameId)
+				const loadGameState = async() => {
+					const [
+						{ role, location },
+						{ gameActive, playersInRoom },
+					] = await Promise.all([
+						futch(`/api/game/${ encodeURIComponent(gameId) }/player/${ playerSecret }`),
+						futch(`/api/game/${ encodeURIComponent(gameId) }`),
+					])
+
+					const locationObject = locationMap[location] || null
+
+					view.set({
+						role,
+						gameActive,
+						playersInRoom,
+						location: locationObject,
+					})
+				}
+
+				loadGameState()
+
+				document.body.dataset.loading = false
+
+				// const interval = setInterval(loadGameState, POLLING_INTERVAL)
 			}
+
+			init()
+
+
 		</script>
 
 		<link rel="stylesheet" href="/styles/basic.css">

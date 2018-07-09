@@ -32,11 +32,11 @@
 		</style>
 
 
-		<script type="module">
+		<script type=module>
 			import { futch, post } from './futch.js'
+			import { PLAYER_SECRET_KEY, PLAYER_NAME_KEY } from './constants.js'
+			import getPlayerDeetz from './get-player-deetz.js'
 
-			const PLAYER_SECRET_KEY = `playerSecret`
-			const PLAYER_NAME_KEY = `playerName`
 			const body = document.body
 
 			const CREATE_NEW_GAME_BUTTON_ID = `create-new-game`
@@ -68,42 +68,6 @@
 				})
 			}
 
-			const createPlayer = async() => {
-				const { playerId, playerSecret } = await post(`/api/create-player`)
-
-				if (!playerSecret || !playerId) {
-					throw new Error(`Didn't get player secret or id back from server.  id: ${ playerId }, secret: ${ playerSecret } }`)
-				}
-
-				localStorage.setItem(PLAYER_SECRET_KEY, playerSecret)
-				return { playerId, playerSecret }
-			}
-
-			const getPlayerDeetz = async() => {
-				let playerSecret = localStorage.getItem(PLAYER_SECRET_KEY)
-
-				if (playerSecret) {
-					console.log(`found player secret`, playerSecret)
-					const { authed, playerId } = await futch(`api/player-id/${ playerSecret }`)
-
-					if (authed) {
-						return {
-							playerId,
-							playerSecret,
-						}
-					}
-				}
-
-				const newPlayer = await createPlayer()
-				const { playerId } = newPlayer
-				playerSecret = newPlayer.playerSecret
-
-				return {
-					playerId,
-					playerSecret,
-				}
-			}
-
 			const playerDeetzPromise = getPlayerDeetz()
 
 
@@ -122,10 +86,16 @@
 					createGameId(),
 				])
 
-				await post(`/api/join-game`, {
-					gameId,
-					playerSecret,
-				})
+				await Promise.all([
+					post(`/api/set-name`, {
+						name: document.getElementById(`player-name`).value,
+						playerSecret,
+					}),
+					post(`/api/join-game`, {
+						gameId,
+						playerSecret,
+					}),
+				])
 
 				document.location = `game.html?gameId=${ gameId }`
 			})

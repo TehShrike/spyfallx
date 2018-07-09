@@ -70,7 +70,11 @@ const createGame = async client => {
 	return gameId
 }
 
-const getGameActive = async(client, gameId) => !!await client.get(gameActiveKey(gameId))
+const getGameActive = async(client, gameId) => {
+	const result = await client.get(gameActiveKey(gameId))
+
+	return result === `1`
+}
 
 const getPlayerId = (client, playerSecret) => client.get(playerIdKey(playerSecret))
 
@@ -142,17 +146,18 @@ const getPlayerIdsInGame = async(client, gameId) => client.smembers(gamePlayersK
 const getGameInformation = async(client, gameId) => {
 	const playerIdsInRoom = await getPlayerIdsInGame(client, gameId)
 
-	const gameInfoBatch = client.batch()
-
-	gameInfoBatch.hkeys(gameRolesKey(gameId))
-	getGameActive(gameInfoBatch, gameId)
-	playerIdsInRoom.forEach(playerId => getPlayerName(gameInfoBatch, playerId))
-
 	const [
 		activePlayerIdsInGame,
 		gameActive,
 		...playerNames
-	] = await gameInfoBatch.exec()
+	] = await Promise.all([
+		client.hkeys(gameRolesKey(gameId)),
+		getGameActive(client, gameId),
+		...playerIdsInRoom.map(playerId => getPlayerName(client, playerId)),
+	])
+
+	console.log(`player names`, playerNames)
+	console.log(`activePlayerIdsInGame`, activePlayerIdsInGame)
 
 	const activePlayerIdsSet = new Set(activePlayerIdsInGame)
 
@@ -176,7 +181,7 @@ const getPlayerGameInformation = async(client, gameId, playerSecret) => {
 	const playerId = await getPlayerId(client, playerSecret)
 
 
-	const [ role, location ] = Promise.all([
+	const [ role, location ] = await Promise.all([
 		getPlayerRole(client, gameId, playerId),
 		locationPromise,
 		gameActivePromise,
@@ -257,6 +262,13 @@ function startServer(port) {
 
 				await runWithRedis(async client => {
 					success(context, await getPlayerGameInformation(client, gameId, playerSecret))
+				})
+			},
+			'/api/game/:gameId': async context => {
+				const { gameId } = context.params
+
+				await runWithRedis(async client => {
+					success(context, await getGameInformation(client, gameId))
 				})
 			},
 			'/api/player-id/:playerSecret': async context => {

@@ -1,0 +1,55 @@
+{#if role && location}
+	{#if role === `Spy`}
+		<h2>You're the spy!</h2>
+		<strong>Play it cool</strong>
+	{:else}
+		<h2>You're the {role}</h2>
+		<strong>At the {location.name}</strong>
+	{/if}
+{/if}
+
+<h3>Players</h3>
+<ul>
+	{#each playersInRoom as player}
+		<li data-player-incactive={gameActive && !player.active}>
+			{player.name}
+		</li>
+	{/each}
+</ul>
+
+{#if location}
+	<h3>Roles</h3>
+	<ul>
+		{#each location.roles as listRole}
+			<li data-my-role={role === listRole}>{listRole}</li>
+		{/each}
+	</ul>
+{/if}
+
+<h3>Locations</h3>
+<ul>
+	{#each locationNames as locationName}
+		<li>{locationName}</li>
+	{/each}
+</ul>
+
+<style>
+	[data-player-incactive=true] {
+		font-style: italic;
+	}
+</style>
+
+<script>
+export default {
+	data() {
+		return {
+			role: null,
+			location: null,
+			gameActive: null,
+			playersInRoom: [],
+			locationNames: [],
+			playerId: null,
+		}
+	},
+}
+</script>

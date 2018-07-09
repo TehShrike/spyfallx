@@ -14,7 +14,7 @@ export const futch = async(url, options = {}) => {
 		headers,
 	})
 
-	if (response.status < 200 || response.status >= 300) {
+	if (response.status < 200 || response.status >= 400) {
 		throw new Error(`Server returned status ${ response.status }`)
 	}
 
