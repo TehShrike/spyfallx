@@ -107,7 +107,7 @@ const getPlayerName = async(client, playerId) => await client.get(playerNameKey(
 
 const playerIsAuthedToGame = async(client, gameId, playerSecret) => !!await client.sismember(
 	gamePlayersKey(gameId),
-	await getPlayerId(client, playerSecret)
+	await getPlayerIdOrThrow(client, playerSecret)
 )
 
 const freshSeed = count => new Array(count).fill(1)
@@ -166,9 +166,6 @@ const getGameInformation = async(client, gameId) => {
 		...playerIdsInRoom.map(playerId => getPlayerName(client, playerId)),
 	])
 
-	console.log(`player names`, playerNames)
-	console.log(`activePlayerIdsInGame`, activePlayerIdsInGame)
-
 	const activePlayerIdsSet = new Set(activePlayerIdsInGame)
 
 	const playersInRoom = combine({
@@ -207,12 +204,12 @@ const stopGame = (client, gameId) => client.set(gameActiveKey(gameId), `0`)
 
 async function startGame(client, gameId) {
 	const [ playerIds, locationIndex ] = await Promise.all([
-		getPlayerIdsInGame(gameId),
+		getPlayerIdsInGame(client, gameId),
 		getRandomIndexUsingSeed(client, gameLocationSeed(gameId), locations.length),
 	])
 
 	if (playerIds.length < 3) {
-		return `You can't start a game with less than three players`
+		throw new Error(`You can't start a game with less than three players`)
 	}
 
 	const location = locations[locationIndex]
@@ -238,10 +235,14 @@ async function startGame(client, gameId) {
 		role: playerRoles,
 	}).map(({ playerId, role }) => [ playerId, role ])
 
-	await client.htmset([
+	await client.hmset([
 		gameRolesKey(gameId),
 		...playerRoleHash,
 	])
+
+	return {
+		success: true,
+	}
 }
 
 const runWithRedis = async fn => {
@@ -332,14 +333,15 @@ function startServer(port) {
 				const { gameId, playerSecret } = context.request.body
 
 				await runWithRedis(async client => {
-					const authed = await playerIsAuthedToGame(client, playerSecret)
+					const authed = await playerIsAuthedToGame(client, gameId, playerSecret)
 
 					if (authed) {
-						await startGame(client, gameId)
+						context.body = await startGame(client, gameId)
+						return
 					}
 
 					context.body = {
-						success: authed,
+						success: false,
 					}
 				})
 			},
@@ -347,7 +349,7 @@ function startServer(port) {
 				const { gameId, playerSecret } = context.request.body
 
 				await runWithRedis(async client => {
-					const authed = await playerIsAuthedToGame(client, playerSecret)
+					const authed = await playerIsAuthedToGame(client, gameId, playerSecret)
 
 					if (authed) {
 						await stopGame(client, gameId)

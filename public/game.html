@@ -35,7 +35,7 @@
 			import GameState from './build/game-state.js'
 			import locationMap from './build/locations.js'
 
-			const POLLING_INTERVAL = 1000
+			const POLLING_INTERVAL = 5000
 
 			const params = () => {
 				const searchParams = new URLSearchParams(document.location.search)
@@ -86,9 +86,18 @@
 
 				loadGameState()
 
+				view.on(`start`, async() => {
+					await post(`/api/start-game`, {
+						gameId,
+						playerSecret,
+					})
+
+					await loadGameState()
+				})
+
 				document.body.dataset.loading = false
 
-				// const interval = setInterval(loadGameState, POLLING_INTERVAL)
+				const interval = setInterval(loadGameState, POLLING_INTERVAL)
 			}
 
 			init()

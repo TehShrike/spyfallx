@@ -30,6 +30,19 @@
 	</ul>
 {/if}
 
+{#if gameActive}
+	<button>
+		Finish game
+	</button>
+	<button>
+		Leave game
+	</button>
+{:else}
+	<button on:click="fire('start')">
+		Start game
+	</button>
+{/if}
+
 <h3>Locations</h3>
 <ul>
 	{#each locationNames as locationName}
