@@ -13,10 +13,10 @@
 		<hr>
 		<label>
 			Your name:
-			<input type="text" placeholder="Joe Internet" id="player-name">
+			<input type="text" placeholder="Jill Internet" id="player-name">
 		</label>
 
-		<button onclick=createAndNavigate() id=create-new-game>Create new game</button>
+		<button id=create-new-game>Create new game</button>
 
 		<label>
 			Game id:
@@ -32,34 +32,44 @@
 		</style>
 
 
-		<script>
+		<script type="module">
+			import { futch, post } from './futch.js'
+
 			const PLAYER_SECRET_KEY = `playerSecret`
 			const PLAYER_NAME_KEY = `playerName`
 			const body = document.body
 
-			// should probably be able to create a player without a name
-			// only need to assign a name to the player before joining the game
+			const CREATE_NEW_GAME_BUTTON_ID = `create-new-game`
 
-			const initialPlayerName = localStorage.getItem(PLAYER_NAME_KEY)
-
-			const playerNameElement = document.getElementById(`player-name`)
-
-			const updateUsernameFilled = () => {
-				body.dataset.dataUsernameFilled = !!playerNameElement.value
+			const on = (id, event, fn) => {
+				const e = document.getElementById(id)
+				e.addEventListener(event, fn)
+				return () => e.removeEventListener(event, fn)
 			}
 
-			if (initialPlayerName) {
-				playerNameElement.value = initialPlayerName
-				updateUsernameFilled()
-			}
-			playerNameElement.addEventListener(`keyup`, updateUsernameFilled)
+			const init = async() => {
+				const initialPlayerName = localStorage.getItem(PLAYER_NAME_KEY)
 
-			const post = (url, body) => fetch(url, { method: `POST`, body })
+				const playerNameElement = document.getElementById(`player-name`)
 
-			const createPlayer = async name => {
-				const { playerId, playerSecret } = await post(`/api/create-player`, {
-					name,
+				const updateUsernameFilled = () => {
+					body.dataset.dataUsernameFilled = !!playerNameElement.value
+				}
+
+				if (initialPlayerName) {
+					console.log(`Found saved player name`, initialPlayerName)
+					playerNameElement.value = initialPlayerName
+					updateUsernameFilled()
+				}
+				playerNameElement.addEventListener(`input`, updateUsernameFilled)
+
+				window.addEventListener(`unhandledrejection`, event => {
+					console.error(event.reason)
 				})
+			}
+
+			const createPlayer = async() => {
+				const { playerId, playerSecret } = await post(`/api/create-player`)
 
 				if (!playerSecret || !playerId) {
 					throw new Error(`Didn't get player secret or id back from server.  id: ${ playerId }, secret: ${ playerSecret } }`)
@@ -74,7 +84,8 @@
 
 				if (playerSecret) {
 					console.log(`found player secret`, playerSecret)
-					const { authed, playerId } = await fetch(`api/player-id/${ playerSecret }`)
+					const { authed, playerId } = await futch(`api/player-id/${ playerSecret }`)
+
 					if (authed) {
 						return {
 							playerId,
@@ -97,14 +108,12 @@
 
 
 			const createGameId = async() => {
-				const response = await post(`/api/create`)
-
-				const { gameId } = await response.json()
+				const { gameId } = await post(`/api/create`)
 
 				return gameId
 			}
 
-			const createAndNavigate = async() => {
+			on(CREATE_NEW_GAME_BUTTON_ID, `click`, async() => {
 				const [
 					{ playerId, playerSecret },
 					gameId,
@@ -119,11 +128,9 @@
 				})
 
 				document.location = `game.html?gameId=${ gameId }`
-			}
-
-			window.on(`unhandledrejection`, event => {
-				console.error(event.reason)
 			})
+
+			init()
 		</script>
 
 		<link rel="stylesheet" href="/styles/basic.css">
