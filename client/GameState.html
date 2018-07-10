@@ -2,7 +2,7 @@
 	Game code: <strong>{gameId}</strong>
 </p>
 
-{#if role}
+{#if gameActive}
 	{#if role === `Spy`}
 		<h2>You're the spy!</h2>
 		<strong>Play it cool</strong>
@@ -10,6 +10,8 @@
 		<h2>You're the {role}</h2>
 		<strong>At the {location.name}</strong>
 	{/if}
+{:else}
+	<h2>Waiting for game to start...</h2>
 {/if}
 
 <h3>Players</h3>
@@ -24,7 +26,7 @@
 	{/each}
 </ul>
 
-{#if location}
+{#if gameActive && location}
 	<h3>Roles</h3>
 	<ul>
 		{#each location.roles as listRole}
@@ -41,14 +43,15 @@
 	<button on:click="fire('finish')">
 		Finish game
 	</button>
-	<button on:click="fire('leave')">
-		Leave game
-	</button>
 {:else}
 	<button on:click="fire('start')">
 		Start game
 	</button>
 {/if}
+
+<button on:click="fire('leave')">
+	Leave game
+</button>
 
 <h3>Locations</h3>
 <ul>

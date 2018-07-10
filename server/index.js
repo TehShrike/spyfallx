@@ -170,14 +170,23 @@ const getGameInformation = async(client, gameId) => {
 		...playerIdsInRoom.map(playerId => getPlayerName(client, playerId)),
 	])
 
-	const activePlayerIdsSet = new Set(activePlayerIdsInGame)
-
-	const playersInRoom = combine({
+	const playersAndNames = combine({
 		playerId: playerIdsInRoom,
 		name: playerNames,
-		active: playerIdsInRoom.map(id => activePlayerIdsSet.has(id)),
 	})
 
+	if (!gameActive) {
+		return {
+			gameActive,
+			playersInRoom: playersAndNames,
+		}
+	}
+
+	const activePlayerIdsSet = new Set(activePlayerIdsInGame)
+
+	const playersInRoom = playersAndNames.map(player => Object.assign(player, {
+		active: activePlayerIdsSet.has(player.playerId),
+	}))
 
 	return {
 		gameActive,

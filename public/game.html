@@ -101,6 +101,15 @@
 					await loadGameState()
 				})
 
+				view.on(`finish`, async() => {
+					await post(`/api/stop-game`, {
+						gameId,
+						playerSecret,
+					})
+
+					await loadGameState()
+				})
+
 				document.body.dataset.loading = false
 
 				setInterval(loadGameState, POLLING_INTERVAL)
