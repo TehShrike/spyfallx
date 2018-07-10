@@ -10,3 +10,8 @@
 	- for every game-info request, retrieve that timestamp, and return how many milliseconds are left in the game
 - Ability to remove players
 - Ability to change your name
+- UI
+	- visually differentiate between the list of players and the lists of roles/locations
+	- highlight the current role/location
+	- highlight your name in the player list
+	- come up with a better red color, or find a way to make the red work on the darker background
