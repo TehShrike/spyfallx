@@ -65,6 +65,11 @@
 					locationNames: Object.keys(locationMap),
 				})
 
+				await post(`/api/join-game`, {
+					gameId,
+					playerSecret,
+				})
+
 				const loadGameState = async() => {
 					const [
 						{ role, location },
@@ -97,7 +102,7 @@
 
 				document.body.dataset.loading = false
 
-				const interval = setInterval(loadGameState, POLLING_INTERVAL)
+				setInterval(loadGameState, POLLING_INTERVAL)
 			}
 
 			init()

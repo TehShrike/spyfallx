@@ -2,7 +2,7 @@
 	Game code: <strong>{gameId}</strong>
 </p>
 
-{#if role && location}
+{#if role}
 	{#if role === `Spy`}
 		<h2>You're the spy!</h2>
 		<strong>Play it cool</strong>
@@ -15,7 +15,7 @@
 <h3>Players</h3>
 <ul>
 	{#each playersInRoom as player}
-		<li data-player-incactive={gameActive && !player.active}>
+		<li data-player-inactive={gameActive && !player.active}>
 			{player.name}
 		</li>
 	{/each}
@@ -31,10 +31,10 @@
 {/if}
 
 {#if gameActive}
-	<button>
+	<button on:click="fire('finish')">
 		Finish game
 	</button>
-	<button>
+	<button on:click="fire('leave')">
 		Leave game
 	</button>
 {:else}
@@ -51,7 +51,7 @@
 </ul>
 
 <style>
-	[data-player-incactive=true] {
+	[data-player-inactive=true] {
 		font-style: italic;
 	}
 </style>

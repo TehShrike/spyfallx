@@ -230,14 +230,16 @@ async function startGame(client, gameId) {
 		}
 	})
 
-	const playerRoleHash = combine({
-		playerId: playerIds,
-		role: playerRoles,
-	}).map(({ playerId, role }) => [ playerId, role ])
+	const playerRoleHash = new Map(
+		combine({
+			playerId: playerIds,
+			role: playerRoles,
+		}).map(({ playerId, role }) => [ playerId, role ])
+	)
 
 	await client.hmset([
 		gameRolesKey(gameId),
-		...playerRoleHash,
+		playerRoleHash,
 	])
 
 	return {

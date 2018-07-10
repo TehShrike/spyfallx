@@ -80,27 +80,21 @@
 				return gameId
 			}
 
-			const setNameAndJoinGame = async({ gameId }) => {
+			const setNameAndNavigateToGame = async({ gameId }) => {
 				const { playerSecret } = await playerDeetzPromise
 
 				console.log(`setting name to`, document.getElementById(NAME_INPUT_ID).value)
 
-				await Promise.all([
-					post(`/api/set-name`, {
-						name: document.getElementById(NAME_INPUT_ID).value,
-						playerSecret,
-					}),
-					post(`/api/join-game`, {
-						gameId,
-						playerSecret,
-					}),
-				])
+				await post(`/api/set-name`, {
+					name: document.getElementById(NAME_INPUT_ID).value,
+					playerSecret,
+				}),
 
 				document.location = `game.html?gameId=${ gameId }`
 			}
 
 			on(CREATE_NEW_GAME_BUTTON_ID, `click`, async() => {
-				await setNameAndJoinGame({
+				await setNameAndNavigateToGame({
 					gameId: await createGameId(),
 				})
 			})
@@ -108,7 +102,7 @@
 			on(JOIN_GAME_BUTTON_ID, `click`, async() => {
 				const gameId = document.getElementById(GAME_ID_INPUT_ID).value
 
-				await setNameAndJoinGame({
+				await setNameAndNavigateToGame({
 					gameId,
 				})
 			})
