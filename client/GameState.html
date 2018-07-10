@@ -10,6 +10,12 @@
 		<h2>You're the {role}</h2>
 		<strong>At the {location.name}</strong>
 	{/if}
+
+	{#if firstPlayerId === playerId}
+		<p class="emphasize">
+			You ask the first question!
+		</p>
+	{/if}
 {:else}
 	<h2>Waiting for game to start...</h2>
 {/if}
@@ -63,6 +69,10 @@
 <style>
 	[data-player-inactive=true] {
 		font-style: italic;
+	}
+
+	.emphasize {
+		color: red;
 	}
 
 	[data-first-player=true]::after {
