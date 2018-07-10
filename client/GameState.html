@@ -1,24 +1,28 @@
-<p>
-	Game code: <strong>{gameId}</strong>
-</p>
+<div class="center">
+	<h1>Spyfall X</h1>
 
-{#if gameActive}
-	{#if role === `Spy`}
-		<h2>You're the spy!</h2>
-		<strong>Play it cool</strong>
+	<p>
+		Game code: <strong>{gameId}</strong>
+	</p>
+
+	{#if gameActive}
+		{#if role === `Spy`}
+			<h2>You're the spy!</h2>
+			<strong>Play it cool</strong>
+		{:else}
+			<h2>You're the {role}</h2>
+			<strong>At the {location.name}</strong>
+		{/if}
+
+		{#if firstPlayerId === playerId}
+			<p class="emphasize">
+				You ask the first question!
+			</p>
+		{/if}
 	{:else}
-		<h2>You're the {role}</h2>
-		<strong>At the {location.name}</strong>
+		<h2>Waiting for game to start...</h2>
 	{/if}
-
-	{#if firstPlayerId === playerId}
-		<p class="emphasize">
-			You ask the first question!
-		</p>
-	{/if}
-{:else}
-	<h2>Waiting for game to start...</h2>
-{/if}
+</div>
 
 <h3>Players</h3>
 <ul>
@@ -79,6 +83,10 @@
 		content: ' 1st';
 		color: red;
 		font-size: 0.9em;
+	}
+
+	.center {
+		text-align: center;
 	}
 </style>
 

@@ -8,8 +8,6 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1">
 	</head>
 	<body data-loading=true>
-		<h1>Spyfall X</h1>
-
 		<div class="loading">Loading...</div>
 
 		<div class="done-loading">
@@ -26,6 +24,25 @@
 			}
 			[data-loading=false] .done-loading {
 				display: initial;
+			}
+
+			ul, ol {
+				padding: 0;
+				display: flex;
+				flex-wrap: wrap;
+				justify-content: space-between;
+				align-content: space-between;
+			}
+
+			li {
+				flex-basis: calc(50% - 24px);
+				list-style-type: none;
+
+				background-color: #595959;
+				color: #f9f9f9;
+
+				padding: 8px;
+				margin-bottom: 8px;
 			}
 		</style>
 
