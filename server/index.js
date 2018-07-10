@@ -59,9 +59,9 @@ const playerIdKey = playerSecret => `player:id:${ playerSecret }`
 const gamePlayersKey = gameId => `game:players:${ gameId }`
 const gameRolesKey = gameId => `game:roles:${ gameId }`
 const gameActiveKey = gameId => `game:active:${ gameId }`
-const gameLocationSeed = gameId => `game:location-seed:${ gameId }`
+const gameLocationSeedKey = gameId => `game:location-seed:${ gameId }`
 const gameLocationKey = gameId => `game:location:${ gameId }`
-const gameSpySeed = gameId => `game:spy-seed:${ gameId }`
+const gameSpySeedKey = gameId => `game:spy-seed:${ gameId }`
 const gameFirstPlayerKey = gameId => `game:first-player-id:${ gameId }`
 
 const generateGameId = () => reandom.generate(5)
@@ -122,7 +122,7 @@ const getSeed = async(client, key, count) => {
 		const seedArray = seed.split(SEED_NUMBER_SEPARATOR)
 
 		return seedArray.length === count
-			? seedArray
+			? seedArray.map(str => parseInt(str, 10))
 			: freshSeed(count)
 	}
 }
@@ -219,7 +219,7 @@ const stopGame = (client, gameId) => client.set(gameActiveKey(gameId), `0`)
 async function startGame(client, gameId) {
 	const [ playerIds, locationIndex ] = await Promise.all([
 		getPlayerIdsInGame(client, gameId),
-		getRandomIndexUsingSeed(client, gameLocationSeed(gameId), locations.length),
+		getRandomIndexUsingSeed(client, gameLocationSeedKey(gameId), locations.length),
 	])
 
 	const playerCount = playerIds.length
@@ -233,7 +233,7 @@ async function startGame(client, gameId) {
 	const location = locations[locationIndex]
 
 	const [ spyIndex ] = await Promise.all([
-		getRandomIndexUsingSeed(client, gameSpySeed(gameId), playerIds.length),
+		getRandomIndexUsingSeed(client, gameSpySeedKey(gameId), playerIds.length),
 		client.mset({
 			[gameActiveKey(gameId)]: `1`,
 			[gameLocationKey(gameId)]: location.name,
