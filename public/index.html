@@ -11,23 +11,74 @@
 		<h1>Spyfall X</h1>
 
 		<hr>
-		<label>
-			Your name:
-			<input type="text" placeholder="Jill Internet" id="player-name">
-		</label>
 
-		<button id=create-new-game>Create new game</button>
+		<div class="form">
+			<label>
+				<span class=label-text>
+					Your name:
+				</span>
+				<input type="text" placeholder="Your Cool Name Here" id="player-name">
+			</label>
 
-		<label>
-			Game id:
-			<input type="text" placeholder="abefi" id=game-id>
-		</label>
+			<div class="center-row">
+				<button id=create-new-game>Create new game</button>
+			</div>
 
-		<button id=join-game>Join game</button>
+			<label>
+				<span class="label-text">
+					Join existing game:
+				</span>
+				<input type="text" placeholder="game code" id=game-id>
+			</label>
+
+			<div class="center-row">
+				<button id=join-game>Join game</button>
+			</div>
+		</div>
 
 		<style>
 			[data-username-filled=false] #create-new-game {
 				disabled: true;
+			}
+
+			.form {
+				display: flex;
+				flex-direction: column;
+				align-items: stretch;
+				justify-content: space-around;
+			}
+
+			.form > * {
+				margin-bottom: 16px;
+			}
+
+			.center-row {
+				display: flex;
+				justify-content: center;
+				align-items: stretch;
+			}
+
+			hr {
+				flex-grow: 1;
+			}
+
+			.form label {
+				display: flex;
+				flex-direction: column;
+				align-items: stretch;
+			}
+			.form label input {
+				flex-grow: 1;
+			}
+
+			.label-text {
+				padding-top: 8px;
+				padding-bottom: 8px;
+			}
+
+			.form button {
+				flex-grow: 1;
+				max-width: 400px;
 			}
 		</style>
 
@@ -44,6 +95,8 @@
 			const NAME_INPUT_ID = `player-name`
 			const GAME_ID_INPUT_ID = `game-id`
 
+			const playerNameElement = document.getElementById(NAME_INPUT_ID)
+
 			const on = (id, event, fn) => {
 				const e = document.getElementById(id)
 				e.addEventListener(event, fn)
@@ -52,8 +105,6 @@
 
 			const init = async() => {
 				const initialPlayerName = localStorage.getItem(PLAYER_NAME_KEY)
-
-				const playerNameElement = document.getElementById(NAME_INPUT_ID)
 
 				const updateUsernameFilled = () => {
 					body.dataset.dataUsernameFilled = !!playerNameElement.value
@@ -83,10 +134,12 @@
 			const setNameAndNavigateToGame = async({ gameId }) => {
 				const { playerSecret } = await playerDeetzPromise
 
-				console.log(`setting name to`, document.getElementById(NAME_INPUT_ID).value)
+				console.log(`setting name to`, playerNameElement.value)
+
+				localStorage.setItem(PLAYER_NAME_KEY, playerNameElement.value)
 
 				await post(`/api/set-name`, {
-					name: document.getElementById(NAME_INPUT_ID).value,
+					name: playerNameElement.value,
 					playerSecret,
 				}),
 
