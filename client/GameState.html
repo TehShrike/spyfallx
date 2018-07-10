@@ -15,7 +15,10 @@
 <h3>Players</h3>
 <ul>
 	{#each playersInRoom as player}
-		<li data-player-inactive={gameActive && !player.active}>
+		<li
+			data-player-inactive={gameActive && !player.active}
+			data-first-player={firstPlayerId === player.playerId}
+		>
 			{player.name}
 		</li>
 	{/each}
@@ -25,7 +28,11 @@
 	<h3>Roles</h3>
 	<ul>
 		{#each location.roles as listRole}
-			<li data-my-role={role === listRole}>{listRole}</li>
+			<li
+				data-my-role={role === listRole}
+			>
+				{listRole}
+			</li>
 		{/each}
 	</ul>
 {/if}
@@ -54,6 +61,12 @@
 	[data-player-inactive=true] {
 		font-style: italic;
 	}
+
+	[data-first-player=true]::after {
+		content: ' 1st';
+		color: red;
+		font-size: 0.9em;
+	}
 </style>
 
 <script>
@@ -67,6 +80,7 @@ export default {
 			playersInRoom: [],
 			locationNames: [],
 			playerId: null,
+			firstPlayerId: null,
 		}
 	},
 }

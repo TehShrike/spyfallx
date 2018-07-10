@@ -13,6 +13,7 @@ const reandom = require(`reandom`)
 const Die = require(`gamblers-dice`)
 const combine = require(`combine-arrays`)
 const makeUuid = require(`just-uuid4`)
+const random = require(`random-int`)
 
 const locations = require(`../shared/locations.js`)
 const makeShuffler = require(`./shuffler.js`)
@@ -61,6 +62,7 @@ const gameActiveKey = gameId => `game:active:${ gameId }`
 const gameLocationSeed = gameId => `game:location-seed:${ gameId }`
 const gameLocationKey = gameId => `game:location:${ gameId }`
 const gameSpySeed = gameId => `game:spy-seed:${ gameId }`
+const gameFirstPlayerKey = gameId => `game:first-player-id:${ gameId }`
 
 const generateGameId = () => reandom.generate(5)
 
@@ -159,10 +161,12 @@ const getGameInformation = async(client, gameId) => {
 	const [
 		activePlayerIdsInGame,
 		gameActive,
+		firstPlayerId,
 		...playerNames
 	] = await Promise.all([
 		client.hkeys(gameRolesKey(gameId)),
 		getGameActive(client, gameId),
+		client.get(gameFirstPlayerKey(gameId)),
 		...playerIdsInRoom.map(playerId => getPlayerName(client, playerId)),
 	])
 
@@ -178,6 +182,7 @@ const getGameInformation = async(client, gameId) => {
 	return {
 		gameActive,
 		playersInRoom,
+		firstPlayerId,
 	}
 }
 
@@ -208,16 +213,23 @@ async function startGame(client, gameId) {
 		getRandomIndexUsingSeed(client, gameLocationSeed(gameId), locations.length),
 	])
 
-	if (playerIds.length < 3) {
+	const playerCount = playerIds.length
+
+	if (playerCount < 3) {
 		throw new Error(`You can't start a game with less than three players`)
 	}
+
+	const firstPlayerId = playerIds[random(playerCount - 1)]
 
 	const location = locations[locationIndex]
 
 	const [ spyIndex ] = await Promise.all([
 		getRandomIndexUsingSeed(client, gameSpySeed(gameId), playerIds.length),
-		client.set(gameActiveKey(gameId), `1`),
-		client.set(gameLocationKey(gameId), location.name),
+		client.mset({
+			[gameActiveKey(gameId)]: `1`,
+			[gameLocationKey(gameId)]: location.name,
+			[gameFirstPlayerKey(gameId)]: firstPlayerId,
+		}),
 	])
 
 	const getNextRole = makeShuffler(location.roles)

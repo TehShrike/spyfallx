@@ -73,7 +73,7 @@
 				const loadGameState = async() => {
 					const [
 						{ role, location },
-						{ gameActive, playersInRoom },
+						{ gameActive, playersInRoom, firstPlayerId },
 					] = await Promise.all([
 						futch(`/api/game/${ encodeURIComponent(gameId) }/player/${ playerSecret }`),
 						futch(`/api/game/${ encodeURIComponent(gameId) }`),
@@ -85,11 +85,12 @@
 						role,
 						gameActive,
 						playersInRoom,
+						firstPlayerId,
 						location: locationObject,
 					})
 				}
 
-				loadGameState()
+				await loadGameState()
 
 				view.on(`start`, async() => {
 					await post(`/api/start-game`, {
