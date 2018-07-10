@@ -25,7 +25,7 @@ input {
 	font-size: 0.9375rem;
 	line-height: 1.5;
 
-	background-color: #fff;
+	background-color: var(--white);
 	background-clip: padding-box;
 	border: 1px solid #ced4da;
 	border-radius: 0.25rem;
@@ -43,7 +43,7 @@ input {
 }
 
 input:focus {
-	background-color: #fff;
+	background-color: var(--white);
 	border-color: #597ea2;
 	outline: 0;
 	-webkit-box-shadow: 0 0 0 0.2rem rgba(44, 62, 80, 0.25);
@@ -52,7 +52,7 @@ input:focus {
 
 
 button {
-	color: #fff;
+	color: var(--white);
 	background-color: #2C3E50;
 	border-color: #2C3E50;
 
@@ -79,7 +79,7 @@ button {
 }
 
 button:hover {
-	color: #fff;
+	color: var(--white);
 	background-color: #1e2b37;
 	border-color: #1a252f;
 }
