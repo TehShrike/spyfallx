@@ -110,6 +110,14 @@
 					await loadGameState()
 				})
 
+				view.on(`leave`, async() => {
+					await post(`/api/remove-from-game`, {
+						gameId,
+						playerId,
+					})
+					document.location = `./`
+				})
+
 				document.body.dataset.loading = false
 
 				setInterval(loadGameState, POLLING_INTERVAL)

@@ -95,6 +95,8 @@ const addPlayerToGame = async(client, gameId, playerSecret) => {
 	await client.sadd(gamePlayersKey(gameId), playerId)
 }
 
+const removePlayerFromGame = async(client, gameId, playerId) => client.srem(gamePlayersKey(gameId), playerId)
+
 const setPlayerNameWithPlayerSecret = async(client, playerSecret, name) => {
 	const playerId = await getPlayerIdOrThrow(client, playerSecret)
 
@@ -348,6 +350,15 @@ function startServer(port) {
 
 				await runWithRedis(async client => {
 					await addPlayerToGame(client, gameId, playerSecret)
+
+					success(context)
+				})
+			},
+			'/api/remove-from-game': async context => {
+				const { gameId, playerId } = context.request.body
+
+				await runWithRedis(async client => {
+					await removePlayerFromGame(client, gameId, playerId)
 
 					success(context)
 				})
