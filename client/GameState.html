@@ -2,7 +2,7 @@
 	<h1>Spyfall X</h1>
 
 	<p>
-		Game code: <strong class="emphasize">{gameId}</strong>
+		Game code: <strong class="emphasize uppercase">{gameId}</strong>
 	</p>
 
 	{#if gameActive}
@@ -90,18 +90,22 @@
 		outline: 2px solid var(--deepCarrot);
 	}
 
-	.emphasize {
-		color: var(--blue);
-	}
-
 	[data-first-player=true]::after {
 		content: ' 1st';
 		color: var(--blue);
 		font-size: 0.9em;
 	}
 
+	.emphasize {
+		color: var(--blue);
+	}
+
 	.center {
 		text-align: center;
+	}
+
+	.uppercase {
+		text-transform: uppercase;
 	}
 </style>
 
