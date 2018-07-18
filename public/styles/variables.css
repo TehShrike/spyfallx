@@ -1,4 +1,8 @@
 :root {
-	--red: #E74C3C;
+	--black: #333;
+	--red: #DC143C;
 	--white: #fff;
+	--gray: #95a5a6;
+	--deepCarrot: #FF7F00;
+	--blue: #04819E;
 };

@@ -2,7 +2,7 @@
 	<h1>Spyfall X</h1>
 
 	<p>
-		Game code: <strong>{gameId}</strong>
+		Game code: <strong class="emphasize">{gameId}</strong>
 	</p>
 
 	{#if gameActive}
@@ -25,11 +25,12 @@
 </div>
 
 <h3>Players</h3>
-<ul>
+<ul class="bordered">
 	{#each playersInRoom as player}
 		<li
 			data-player-inactive={gameActive && !player.active}
 			data-first-player={firstPlayerId === player.playerId}
+			data-current-player={player.playerId === playerId}
 		>
 			{player.name}
 		</li>
@@ -66,7 +67,11 @@
 <h3>Locations</h3>
 <ul>
 	{#each locationNames as locationName}
-		<li>{locationName}</li>
+		<li
+			data-current-location={location && locationName === location.name}
+		>
+			{locationName}
+		</li>
 	{/each}
 </ul>
 
@@ -75,13 +80,21 @@
 		font-style: italic;
 	}
 
+	[data-current-player=true] {
+		border-color: var(--deepCarrot);
+	}
+
+	[data-my-role=true], [data-current-location=true] {
+		outline: 2px solid var(--deepCarrot);
+	}
+
 	.emphasize {
-		color: var(--red);
+		color: var(--blue);
 	}
 
 	[data-first-player=true]::after {
 		content: ' 1st';
-		color: var(--red);
+		color: var(--blue);
 		font-size: 0.9em;
 	}
 

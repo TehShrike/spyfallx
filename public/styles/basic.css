@@ -9,8 +9,8 @@ body {
 	max-width: 600px;
 
 	font-family: "Lato", "Helvetica Neue", Helvetica;
-	color: #333;
-	background-color: #f9f9f9;
+	color: var(--black);
+	background-color: var(--white);
 }
 
 
@@ -82,4 +82,39 @@ button:hover {
 	color: var(--white);
 	background-color: #1e2b37;
 	border-color: #1a252f;
+}
+
+
+ul, ol {
+	padding: 0;
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: space-between;
+	align-content: space-between;
+}
+
+li {
+	flex-basis: calc(50% - 24px);
+	list-style-type: none;
+
+	background-color: var(--gray);
+	color: var(--white);
+
+	padding: 8px;
+	margin-bottom: 8px;
+}
+
+.bordered > li {
+	border: 2px solid var(--gray);
+	background-color: transparent;
+	color: var(--black);
+	border-radius: 0.25rem;
+}
+
+li[data-highlight=true] {
+	background-color: var(--deepCarrot);
+}
+
+.bordered > li[data-highlight=true] {
+	border-color: var(--deepCarrot);
 }
