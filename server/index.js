@@ -8,12 +8,15 @@ const conditionalGet = require(`koa-conditional-get`)
 const etag = require(`koa-etag`)
 const send = require(`koa-send`)
 const koaBody = require(`koa-body`)
+
 const Redis = require(`ioredis`)
+const combine = require(`combine-arrays`)
+
 const reandom = require(`reandom`)
 const Die = require(`gamblers-dice`)
-const combine = require(`combine-arrays`)
 const makeUuid = require(`just-uuid4`)
 const random = require(`random-int`)
+const generatePhonetic = require(`phonetic`).generate
 
 const locations = require(`../shared/locations.js`)
 const makeShuffler = require(`./shuffler.js`)
@@ -146,7 +149,15 @@ const createPlayer = async client => {
 	const playerId = makeUuid()
 	const playerSecret = makeUuid()
 
-	await client.set(playerIdKey(playerSecret), playerId)
+	const defaultPlayerName = generatePhonetic({
+		syllables: 2,
+		seed: playerId,
+	})
+
+	await Promise.all([
+		setPlayerNameWithPlayerId(client, playerId, defaultPlayerName),
+		client.set(playerIdKey(playerSecret), playerId),
+	])
 
 	return {
 		playerId,

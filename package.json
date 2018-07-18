@@ -32,6 +32,7 @@
     "loud-rejection": "1.6.0",
     "make-dir-cli": "^1.0.0",
     "mannish": "3.2.0",
+    "phonetic": "0.1.1",
     "random-int": "1.0.0",
     "reandom": "0.0.2",
     "svelte": "2.9.3",

@@ -9,9 +9,11 @@
 		{#if role === `Spy`}
 			<h2>You're the spy!</h2>
 			<strong>Play it cool</strong>
-		{:else}
+		{:elseif role}
 			<h2>You're the {role}</h2>
 			<strong>At the {location.name}</strong>
+		{:else}
+			<h2>You're waiting for the next game</h2>
 		{/if}
 
 		{#if firstPlayerId === playerId}
