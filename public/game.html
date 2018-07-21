@@ -96,7 +96,7 @@
 						futch(`/api/game/${ encodeURIComponent(gameId) }`),
 					])
 
-					const locationObject = locationMap[location] || null
+					const locationObject = (gameActive && locationMap[location]) || null
 
 					view.set({
 						gameId,
