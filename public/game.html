@@ -8,23 +8,42 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1">
 		<link rel="stylesheet" href="/styles/variables.css">
 	</head>
-	<body data-loading=true>
-		<div class="loading">Loading...</div>
+	<body data-loading=true data-error=false>
 
-		<div class="done-loading">
+		<div data-when=loading class="center">Loading...</div>
+
+		<div data-when=done-loading>
 			<div id="game-state-target"></div>
 		</div>
 
+		<div id=error-message data-when=error class="center">
+
+		</div>
+
+		<div data-when=error class="center">
+			<a href="./">Back to home page</a>
+		</div>
+
 		<style>
-			.loading, .done-loading {
+			[data-when] {
 				display: none;
 			}
 
-			[data-loading=true] .loading {
-				display: initial;
+			[data-loading=true] [data-when=loading] {
+				display: block;
 			}
-			[data-loading=false] .done-loading {
-				display: initial;
+			[data-loading=false] [data-when=done-loading] {
+				display: block;
+			}
+			[data-error=true] [data-when=error] {
+				display: block;
+			}
+
+			#error-message {
+				margin-top: 16px;
+				margin-bottom: 16px;
+				color: var(--deepCarrot);
+				font-weight: bold;
 			}
 		</style>
 
@@ -52,7 +71,6 @@
 			const view = new GameState({
 				target: document.getElementById(`game-state-target`),
 				data: {
-					gameId,
 				},
 			})
 
@@ -81,6 +99,7 @@
 					const locationObject = locationMap[location] || null
 
 					view.set({
+						gameId,
 						role,
 						gameActive,
 						playersInRoom,
@@ -89,7 +108,28 @@
 					})
 				}
 
-				await loadGameState()
+				try {
+					await loadGameState()
+				} catch (err) {
+					const errorMessageElement = document.getElementById(`error-message`)
+					if (err.status === 404) {
+						errorMessageElement.innerText = `Invalid game id!`
+					} else {
+						err.json().then(body => {
+							if (body.message) {
+								errorMessageElement.innerText = body.message
+							}
+						})
+					}
+
+					view.destroy()
+
+					document.body.dataset.loading = false
+					document.body.dataset.error = true
+
+					return
+				}
+
 
 				view.on(`start`, async() => {
 					await post(`/api/start-game`, {

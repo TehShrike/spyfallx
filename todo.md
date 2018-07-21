@@ -1,12 +1,10 @@
 # game is broken without this
 
-- if the game id is invalid, need to display something useful (probably link back to home page)
 - game timer
 	- record the timestamp when the game starts
 	- for every game-info request, retrieve that timestamp, and return how many milliseconds are left in the game
 - expire keys intelligently
 	- like, say, 30 minutes since the last time someone made a request about a game?
-- Highlight/lowlight players who do not have a role in the current game
 
 # game probably isn't finished without this
 

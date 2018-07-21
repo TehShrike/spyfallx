@@ -15,7 +15,7 @@ export const futch = async(url, options = {}) => {
 	})
 
 	if (response.status < 200 || response.status >= 400) {
-		throw new Error(`Server returned status ${ response.status }`)
+		return Promise.reject(response)
 	}
 
 	return response.json()

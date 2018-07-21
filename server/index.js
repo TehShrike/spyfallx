@@ -75,8 +75,14 @@ const createGame = async client => {
 	return gameId
 }
 
+const NOT_FOUND = {}
+
 const getGameActive = async(client, gameId) => {
 	const result = await client.get(gameActiveKey(gameId))
+
+	if (!result) {
+		return NOT_FOUND
+	}
 
 	return result === `1`
 }
@@ -182,6 +188,10 @@ const getGameInformation = async(client, gameId) => {
 		client.get(gameFirstPlayerKey(gameId)),
 		...playerIdsInRoom.map(playerId => getPlayerName(client, playerId)),
 	])
+
+	if (gameActive === NOT_FOUND) {
+		return null
+	}
 
 	const playersAndNames = combine({
 		playerId: playerIdsInRoom,
@@ -315,7 +325,17 @@ function startServer(port) {
 				const { gameId } = context.params
 
 				await runWithRedis(async client => {
-					success(context, await getGameInformation(client, gameId))
+					const game = await getGameInformation(client, gameId)
+
+					if (game) {
+						success(context, game)
+					} else {
+						context.status = 404
+						context.body = {
+							success: false,
+							message: `Game not found`,
+						}
+					}
 				})
 			},
 			'/api/player-id/:playerSecret': async context => {
