@@ -52,19 +52,21 @@
 	</ul>
 {/if}
 
-{#if gameActive}
-	<button on:click="fire('finish')">
-		Finish game
-	</button>
-{:else}
-	<button on:click="fire('start')">
-		Start game
-	</button>
-{/if}
+<div class="buttons">
+	{#if gameActive}
+		<button type=button on:click="fire('finish')">
+			Finish game
+		</button>
+	{:else}
+		<button type=button on:click="fire('start')">
+			Start game
+		</button>
+	{/if}
 
-<button on:click="fire('leave')">
-	Leave game
-</button>
+	<button type=button on:click="fire('leave')" class="red">
+		Leave game
+	</button>
+</div>
 
 <h3>Locations</h3>
 <ul>
@@ -96,12 +98,22 @@
 		font-size: 0.9em;
 	}
 
+	.buttons {
+		display: flex;
+		flex-direction: row;
+		justify-content: space-between;
+	}
+
 	.emphasize {
 		color: var(--blue);
 	}
 
 	.uppercase {
 		text-transform: uppercase;
+	}
+
+	.red {
+		background-color: var(--red);
 	}
 </style>
 
