@@ -1,0 +1,17 @@
+{
+	"name": "spyfallx",
+	"profile": "josh",
+	"regions": ["us-east-1"],
+	"stages": {
+		"staging": {
+			"domain": "staging.spyfallx.com"
+		},
+		"production": {
+			"domain": "spyfallx.com"
+		}
+	},
+	"lambda": {
+		"warm": true,
+		"warm_count": 10
+	}
+}

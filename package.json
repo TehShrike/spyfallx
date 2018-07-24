@@ -7,7 +7,8 @@
     "test": "glob-module-file --pattern=\"+(server|shared)/**/*.test.js\" --format=cjs | node",
     "build": "node build-location-map.js && svelte compile client/GameState.html --format=es --output=public/build/game-state.js",
     "serve": "node server/index.js",
-    "dev": "NODE_DEBUG=ioredis:* nodemon ./server/index.js"
+    "dev": "NODE_DEBUG=ioredis:* nodemon ./server/index.js",
+    "start": "node server/index.js"
   },
   "keywords": [
     "spyfall"
