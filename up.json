@@ -4,10 +4,12 @@
 	"regions": ["us-east-1"],
 	"stages": {
 		"staging": {
-			"domain": "staging.spyfallx.com"
+			"domain": "staging.spyfallx.com",
+			"zone": false
 		},
 		"production": {
-			"domain": "spyfallx.com"
+			"domain": "spyfallx.com",
+			"zone": false
 		}
 	},
 	"lambda": {
