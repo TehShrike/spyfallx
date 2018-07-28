@@ -18,7 +18,6 @@
 
 - create Redis instance on AWS
 - set up VPC (or whatever the correct acronym is)
-- deploy with Up
 
 # CI
 
