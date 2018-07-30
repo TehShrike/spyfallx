@@ -38,13 +38,6 @@
 			[data-error=true] [data-when=error] {
 				display: block;
 			}
-
-			#error-message {
-				margin-top: 16px;
-				margin-bottom: 16px;
-				color: var(--deepCarrot);
-				font-weight: bold;
-			}
 		</style>
 
 		<script type=module>
@@ -52,6 +45,8 @@
 			import getPlayerDeetz from './get-player-deetz.js'
 			import GameState from './build/game-state.js'
 			import locationMap from './build/locations.js'
+
+			const errorMessageElement = document.getElementById(`error-message`)
 
 			const POLLING_INTERVAL = 1000
 
@@ -74,8 +69,27 @@
 				},
 			})
 
+			const handle500 = async promise => {
+				try {
+					return await promise
+				} catch (err) {
+					err.json().then(body => {
+						if (body.message) {
+							errorMessageElement.innerText = body.message
+						}
+					})
+					view.destroy()
+
+					document.body.dataset.error = true
+
+					throw err
+				}
+			}
+
+			const postWithErrorHandling = (...args) => handle500(post(...args))
+
 			const init = async() => {
-				const { playerId, playerSecret } = await getPlayerDeetz()
+				const { playerId, playerSecret } = await handle500(getPlayerDeetz())
 
 				view.set({
 					playerId,
@@ -109,9 +123,8 @@
 				}
 
 				try {
-					await loadGameState()
+					await handle500(loadGameState())
 				} catch (err) {
-					const errorMessageElement = document.getElementById(`error-message`)
 					if (err.status === 404) {
 						errorMessageElement.innerText = `Invalid game id!`
 					} else {
@@ -122,17 +135,14 @@
 						})
 					}
 
-					view.destroy()
-
 					document.body.dataset.loading = false
-					document.body.dataset.error = true
 
 					return
 				}
 
 
 				view.on(`start`, async() => {
-					await post(`/api/start-game`, {
+					await postWithErrorHandling(`/api/start-game`, {
 						gameId,
 						playerSecret,
 					})
@@ -141,7 +151,7 @@
 				})
 
 				view.on(`finish`, async() => {
-					await post(`/api/stop-game`, {
+					await postWithErrorHandling(`/api/stop-game`, {
 						gameId,
 						playerSecret,
 					})
@@ -150,7 +160,7 @@
 				})
 
 				view.on(`leave`, async() => {
-					await post(`/api/remove-from-game`, {
+					await postWithErrorHandling(`/api/remove-from-game`, {
 						gameId,
 						playerId,
 					})

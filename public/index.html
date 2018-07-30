@@ -8,7 +8,7 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1">
 		<link rel="stylesheet" href="/styles/variables.css">
 	</head>
-	<body data-username-filled=false>
+	<body data-username-filled=false data-error=false>
 		<h1>Spyfall X</h1>
 
 		<hr>
@@ -35,6 +35,10 @@
 			<div class="center-row">
 				<button type=button id=join-game>Join game</button>
 			</div>
+		</div>
+
+		<div id=error-message data-when=error class="center">
+
 		</div>
 
 		<style>
@@ -81,6 +85,19 @@
 				flex-grow: 1;
 				max-width: 400px;
 			}
+
+
+
+
+
+			[data-when] {
+				display: none;
+			}
+
+			[data-error=true] [data-when=error] {
+				display: block;
+			}
+
 		</style>
 
 
@@ -97,6 +114,22 @@
 			const GAME_ID_INPUT_ID = `game-id`
 
 			const playerNameElement = document.getElementById(NAME_INPUT_ID)
+
+			const handle500 = async promise => {
+				try {
+					return await promise
+				} catch (err) {
+					console.log(err)
+					err.json().then(body => {
+						document.getElementById(`error-message`).innerText = body.message || body
+					})
+
+					document.body.dataset.error = true
+
+					throw err
+				}
+			}
+			const postWithErrorHandling = (...args) => handle500(post(...args))
 
 			const on = (id, event, fn) => {
 				const e = document.getElementById(id)
@@ -123,11 +156,11 @@
 				})
 			}
 
-			const playerDeetzPromise = getPlayerDeetz()
+			const playerDeetzPromise = handle500(getPlayerDeetz())
 
 
 			const createGameId = async() => {
-				const { gameId } = await post(`/api/create`)
+				const { gameId } = await postWithErrorHandling(post(`/api/create`))
 
 				return gameId
 			}
@@ -139,10 +172,10 @@
 
 				localStorage.setItem(PLAYER_NAME_KEY, playerNameElement.value)
 
-				await post(`/api/set-name`, {
+				await postWithErrorHandling(post(`/api/set-name`, {
 					name: playerNameElement.value,
 					playerSecret,
-				}),
+				}))
 
 				document.location = `game.html?gameId=${ gameId }`
 			}

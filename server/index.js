@@ -27,8 +27,11 @@ const publicPath = relative(`../public`)
 
 startServer(process.env.PORT || 8888)
 
+const deployedToAws = !!process.env.UP_STAGE
+const redisHost = deployedToAws ? `spyfall-db.l8ndwu.0001.use1.cache.amazonaws.com` : `localhost`
+
 const getRedis = () => new Redis({
-	host: `localhost`,
+	host: redisHost,
 	port: 6379,
 })
 
@@ -291,9 +294,18 @@ async function startGame(client, gameId) {
 	}
 }
 
-const runWithRedis = async fn => {
+const connectOrThrow = () => new Promise((resolve, reject) => {
 	const client = getRedis()
+
+	client.on(`connect`, () => resolve(client))
+	client.on(`error`, e => reject(e))
+})
+
+const runWithRedis = async fn => {
+	const client = await connectOrThrow()
+
 	await fn(client)
+
 	client.quit()
 }
 
@@ -308,6 +320,18 @@ function startServer(port) {
 	app.use(conditionalGet())
 	app.use(etag())
 	app.use(koaBody())
+
+	app.use(async(context, next) => {
+		try {
+			await next()
+		} catch (err) {
+			context.status = err.status || 500
+			context.body = {
+				success: false,
+				message: err && err.message,
+			}
+		}
+	})
 
 	app.use(createRouter({
 		GET: {
