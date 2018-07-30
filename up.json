@@ -14,6 +14,15 @@
 	},
 	"lambda": {
 		"warm": true,
-		"warm_count": 10
+		"warm_count": 10,
+		"vpc": {
+			"subnets": [
+				"subnet-ab2252a4",
+				"subnet-868c4fb8"
+			],
+			"security_groups": [
+				"sg-3e311274"
+			]
+		}
 	}
 }

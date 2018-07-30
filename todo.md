@@ -18,6 +18,7 @@
 
 - create Redis instance on AWS
 - set up VPC (or whatever the correct acronym is)
+	- I don't know what it takes to get NAT set up, but maybe just move the Up config to some new VPC and see if it's still accessible?
 
 # CI
 
