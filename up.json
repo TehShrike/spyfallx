@@ -17,7 +17,6 @@
 		"warm_count": 10,
 		"vpc": {
 			"subnets": [
-				"subnet-ab2252a4",
 				"subnet-868c4fb8"
 			],
 			"security_groups": [
