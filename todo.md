@@ -6,19 +6,26 @@
 - expire keys intelligently
 	- like, say, 30 minutes since the last time someone made a request about a game?
 
-# game probably isn't finished without this
+# project isn't finished without this
 
 - Ability to change your name
 	- an input/button at the top of the screen?  bottom?
 - Ability to remove players
+- readme to allow others to contribute
+- affiliate link to Spyfall on Amazon
+- link to Patreon
 - maybe make the colors better
 	- the dark background as highlight around your role/location isn't great?
 
+# would be nice to have
+
+- Spyfall 2 location/role list
+
 # deploy
 
-- create Redis instance on AWS
-- set up VPC (or whatever the correct acronym is)
-	- I don't know what it takes to get NAT set up, but maybe just move the Up config to some new VPC and see if it's still accessible?
+- make sure the subnets have plenty of IPs available
+- set up a public/private subnet in two availability zones mebbe
+- script the AWS environment setup?
 
 # CI
 
