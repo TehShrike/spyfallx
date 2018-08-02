@@ -160,7 +160,7 @@
 
 
 			const createGameId = async() => {
-				const { gameId } = await postWithErrorHandling(post(`/api/create`))
+				const { gameId } = await postWithErrorHandling(`/api/create`)
 
 				return gameId
 			}
@@ -172,10 +172,10 @@
 
 				localStorage.setItem(PLAYER_NAME_KEY, playerNameElement.value)
 
-				await postWithErrorHandling(post(`/api/set-name`, {
+				await postWithErrorHandling(`/api/set-name`, {
 					name: playerNameElement.value,
 					playerSecret,
-				}))
+				})
 
 				document.location = `game.html?gameId=${ gameId }`
 			}
