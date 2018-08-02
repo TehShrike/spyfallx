@@ -12,14 +12,23 @@
 	- an input/button at the top of the screen?  bottom?
 - Ability to remove players
 - readme to allow others to contribute
+	- "if you want to submit a PR to change gameplay, open an issue so we can talk it over first"
 - affiliate link to Spyfall on Amazon
 - link to Patreon
 - maybe make the colors better
 	- the dark background as highlight around your role/location isn't great?
+- "about" page
+	- justification
+	- explanation of randomness
+	- link to Github
+	- link to Twitter
 
 # would be nice to have
 
 - Spyfall 2 location/role list
+	- https://github.com/mpcovcd/spyfall/blob/master/spyfall/lib/locations2.js
+	- https://github.com/mpcovcd/spyfall/blob/master/spyfall/i18n/en.i18n.json
+- Server: move game logic code to its own file
 
 # deploy
 
