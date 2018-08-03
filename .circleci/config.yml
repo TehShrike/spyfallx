@@ -53,7 +53,7 @@ jobs:
       - *git_save_cache
       - run:
           name: npm install
-          command: npm ci
+          command: npm ci --only=prod
       - run:
           name: npm test
           command: npm test
