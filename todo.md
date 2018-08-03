@@ -16,8 +16,6 @@
 		- if they choose "join game" prompt them for the code
 		- if they choose "start game" prompt them for spyfall 1 vs 2
 	- title case the text in the buttons
-- readme to allow others to contribute
-	- "if you want to submit a PR to change gameplay, open an issue so we can talk it over first"
 - affiliate link to Spyfall on Amazon
 - link to Patreon
 - maybe make the colors better
@@ -35,6 +33,7 @@
 	- https://github.com/mpcovcd/spyfall/blob/master/spyfall/i18n/en.i18n.json
 - Server: move game logic code to its own file
 - internationalization
+- a readme that gives a slightly better introduction - maybe with some of the rational from the about page
 
 # deploy
 
@@ -42,7 +41,3 @@
 	- http://www.subnet-calculator.com/cidr.php
 - set up a public/private subnet in two availability zones mebbe
 - script the AWS environment setup?
-
-# CI
-
-- deploy on push
