@@ -6,11 +6,8 @@
 - expire keys intelligently
 	- like, say, 30 minutes since the last time someone made a request about a game?
 
-# project isn't finished without this
+# Shouldn't tell people about it without this
 
-- Ability to change your name
-	- an input/button at the top of the screen?  bottom?
-- Ability to remove players
 - The front page UI really sucks
 	- try having just the name input and the two buttons
 		- if they choose "join game" prompt them for the code
@@ -18,20 +15,25 @@
 	- title case the text in the buttons
 - affiliate link to Spyfall on Amazon
 - link to Patreon
-- maybe make the colors better
-	- the dark background as highlight around your role/location isn't great?
 - "about" page
 	- justification
 	- explanation of randomness
 	- link to Github
 	- link to Twitter
 
+# project isn't finished without this
+
+- Ability to change your name
+	- an input/button at the top of the screen?  bottom?
+- Ability to remove players
+- maybe make the colors better
+	- the dark background as highlight around your role/location isn't great?
+
 # would be nice to have
 
 - Spyfall 2 location/role list
 	- https://github.com/mpcovcd/spyfall/blob/master/spyfall/lib/locations2.js
 	- https://github.com/mpcovcd/spyfall/blob/master/spyfall/i18n/en.i18n.json
-- Server: move game logic code to its own file
 - internationalization
 - a readme that gives a slightly better introduction - maybe with some of the rational from the about page
 
