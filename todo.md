@@ -39,10 +39,10 @@
 # deploy
 
 - make sure the subnets have plenty of IPs available
+	- http://www.subnet-calculator.com/cidr.php
 - set up a public/private subnet in two availability zones mebbe
 - script the AWS environment setup?
 
 # CI
 
-- run tests
 - deploy on push
