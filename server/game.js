@@ -94,7 +94,7 @@ const getRandomIndexUsingSeed = async(client, key, count) => {
 
 	const die = new Die()
 	die.state = seedArray
-	const index = die.roll()
+	const index = die.roll() - 1
 	const newSeed = die.state.join(SEED_NUMBER_SEPARATOR)
 
 	await client.set(key, newSeed)
