@@ -1,10 +1,8 @@
 # game is broken without this
 
-- game timer
-	- record the timestamp when the game starts
-	- for every game-info request, retrieve that timestamp, and return how many milliseconds are left in the game
 - expire keys intelligently
 	- like, say, 30 minutes since the last time someone made a request about a game?
+- error messages for every failed response from the server
 
 # Shouldn't tell people about it without this
 
@@ -20,6 +18,7 @@
 	- explanation of randomness
 	- link to Github
 	- link to Twitter
+- replace "leave game" with "back to home page"?
 
 # project isn't finished without this
 

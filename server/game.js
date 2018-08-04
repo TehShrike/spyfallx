@@ -43,6 +43,7 @@ const gameLocationSeedKey = gameId => `game:location-seed:${ gameId }`
 const gameLocationKey = gameId => `game:location:${ gameId }`
 const gameSpySeedKey = gameId => `game:spy-seed:${ gameId }`
 const gameFirstPlayerKey = gameId => `game:first-player-id:${ gameId }`
+const gameStartTimestamp = gameId => `game:start-timestamp:${ gameId }`
 
 const generateGameId = () => reandom.generate(5)
 
@@ -164,11 +165,13 @@ const getGameInformation = async(client, gameId) => {
 		activePlayerIdsInGame,
 		gameActive,
 		firstPlayerId,
+		startTimestampString,
 		...playerNames
 	] = await Promise.all([
 		client.hkeys(gameRolesKey(gameId)),
 		getGameActive(client, gameId),
 		client.get(gameFirstPlayerKey(gameId)),
+		client.get(gameStartTimestamp(gameId)),
 		...playerIdsInRoom.map(playerId => getPlayerName(client, playerId)),
 	])
 
@@ -188,6 +191,8 @@ const getGameInformation = async(client, gameId) => {
 		}
 	}
 
+	const elapsedTimeMs = Date.now() - parseInt(startTimestampString, 10)
+
 	const activePlayerIdsSet = new Set(activePlayerIdsInGame)
 
 	const playersInRoom = playersAndNames.map(player => Object.assign(player, {
@@ -198,6 +203,7 @@ const getGameInformation = async(client, gameId) => {
 		gameActive,
 		playersInRoom,
 		firstPlayerId,
+		elapsedTimeMs,
 	}
 }
 
@@ -244,6 +250,7 @@ const startGame = async(client, gameId) => {
 			[gameActiveKey(gameId)]: `1`,
 			[gameLocationKey(gameId)]: location.name,
 			[gameFirstPlayerKey(gameId)]: firstPlayerId,
+			[gameStartTimestamp(gameId)]: Date.now(),
 		}),
 	])
 

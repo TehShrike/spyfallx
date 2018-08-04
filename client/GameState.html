@@ -6,6 +6,8 @@
 	</p>
 
 	{#if gameActive}
+		<strong>{elapsed}</strong>
+
 		{#if role === `Spy`}
 			<h2>You're the spy!</h2>
 			<strong>Play it cool</strong>
@@ -118,6 +120,10 @@
 </style>
 
 <script>
+const GAME_LENGTH_MS = 1000 * 60 * 8
+
+const pad2 = number => number < 10 ? `0${ number }` : number
+
 export default {
 	data() {
 		return {
@@ -129,7 +135,17 @@ export default {
 			locationNames: [],
 			playerId: null,
 			firstPlayerId: null,
+			elapsedTimeMs: null,
 		}
+	},
+	computed: {
+		elapsed: ({ elapsedTimeMs }) => {
+			const secondsLeft = Math.round((GAME_LENGTH_MS - elapsedTimeMs) / 1000)
+
+			return secondsLeft > 0
+				? `${ Math.floor(secondsLeft / 60) }:${ pad2(secondsLeft % 60) }`
+				: `0:00`
+		},
 	},
 }
 </script>

@@ -41,8 +41,10 @@
 		</style>
 
 		<script type=module>
+			import smoothTime from './time-smoother.js'
 			import { futch, post } from './futch.js'
 			import getPlayerDeetz from './get-player-deetz.js'
+
 			import GameState from './build/game-state.js'
 			import locationMap from './build/locations.js'
 
@@ -62,6 +64,11 @@
 			}
 
 			const { gameId } = params()
+			const time = smoothTime(elapsedTimeMs => {
+				view.set({
+					elapsedTimeMs,
+				})
+			})
 
 			const view = new GameState({
 				target: document.getElementById(`game-state-target`),
@@ -101,16 +108,25 @@
 					playerSecret,
 				})
 
+				let lastElapsedTimeMs = null
+
 				const loadGameState = async() => {
 					const [
 						{ role, location },
-						{ gameActive, playersInRoom, firstPlayerId },
+						{ gameActive, playersInRoom, firstPlayerId, elapsedTimeMs },
 					] = await Promise.all([
 						futch(`/api/game/${ encodeURIComponent(gameId) }/player/${ playerSecret }`),
 						futch(`/api/game/${ encodeURIComponent(gameId) }`),
 					])
 
 					const locationObject = (gameActive && locationMap[location]) || null
+
+					if (!elapsedTimeMs || elapsedTimeMs < lastElapsedTimeMs) {
+						lastElapsedTimeMs = elapsedTimeMs
+						time.reset()
+					}
+
+					elapsedTimeMs && time.update(elapsedTimeMs)
 
 					view.set({
 						gameId,
@@ -146,6 +162,8 @@
 						gameId,
 						playerSecret,
 					})
+
+					time.reset()
 
 					await loadGameState()
 				})
