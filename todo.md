@@ -27,6 +27,8 @@
 - Ability to remove players
 - maybe make the colors better
 	- the dark background as highlight around your role/location isn't great?
+- add a robots.txt that blocks everything when deploying to staging
+	- add a `cp` command to the circle.yml file for the staging deploy
 
 # would be nice to have
 
