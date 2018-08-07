@@ -6,7 +6,7 @@ If you want to make a change that alters the gameplay, open an issue first so we
 
 ## To run locally
 
-Have [Redis](https://redis.io/) 4 installed locally.
+Have [DynamoDB](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/DynamoDBLocal.html) installed and running locally.
 
 ```sh
 npm install
