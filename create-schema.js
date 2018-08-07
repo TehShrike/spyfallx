@@ -13,7 +13,7 @@ const KEY_TYPE = {
 
 async function main() {
 	const currentTables = (await dynamoDb.listTables().promise()).TableNames
-	console.log(`currentTables:`, currentTables)
+
 	await Promise.all(
 		currentTables.map(
 			table => dynamoDb.deleteTable({

@@ -5,4 +5,5 @@ module.exports = {
 	MAP: `M`,
 	NUMBER_SET: `NS`,
 	BOOLEAN: `BOOL`,
+	STRING_SET: `SS`,
 }

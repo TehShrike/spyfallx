@@ -22,9 +22,24 @@ const SPY = `Spy`
 
 const swich = (value, map) => (map[value] || map.def)()
 
+
+const oMap = (object, fn) => {
+	const output = {}
+
+	Object.entries(([ key, value ]) => {
+		output[key] = fn(value)
+	})
+
+	return output
+}
+
 const serialize = (AttributeType, value) => swich(AttributeType, {
 	[TYPE.NUMBER]: () => value.toString(),
 	[TYPE.NUMBER_SET]: () => value.map(number => number.toString()),
+	[TYPE.STRING]: () => value.toString(),
+	[TYPE.MAP]: () => oMap(value, str => ({
+		[TYPE.STRING]: str.toString(),
+	})),
 	def: () => value,
 })
 
@@ -44,7 +59,8 @@ const dynamoFieldObject = fieldValues => Object.assign(
 	...fieldValues.map(({ field, value }) => dynamoFieldProperty(field, value))
 )
 
-const expressionName = AttributeName => `:` + AttributeName
+const expressionValueName = AttributeName => `:` + AttributeName
+const expressionNameName = AttributeName => `#` + AttributeName
 
 const currentTimestampSeconds = () => Math.round(Date.now() / 1000)
 const defaultTtlSeconds = () => currentTimestampSeconds() + (60 * 60 * 24)
@@ -54,18 +70,26 @@ const putItemAndIncreaseTtl = async(dynamoDb, { table, fieldValues }) => putItem
 	fieldValues: [{ field: TABLES[table].ttl, value: defaultTtlSeconds() }, ...fieldValues ],
 })
 
-
 const putItem = async(dynamoDb, { table, fieldValues }) => dynamoDb.putItem({
 	TableName: table,
 	Item: dynamoFieldObject(fieldValues),
 }).promise()
 
+const buildAttributeNameObject = fields => {
+	const o = {}
+	fields.forEach(({ AttributeName }) => {
+		o[expressionNameName(AttributeName)] = AttributeName
+	})
+	return o
+}
+
 const buildUpdateWithValues = ({ table, key, fieldValues }) => ({
 	TableName: table,
 	Key: dynamoFieldProperty(key.field, key.value),
+	ExpressionAttributeNames: buildAttributeNameObject(fieldValues.map(({ field }) => field)),
 	ExpressionAttributeValues: dynamoFieldObject(
 		fieldValues.map(({ field, value }) => ({
-			field: Object.assign({}, field, { AttributeName: expressionName(field.AttributeName) }),
+			field: Object.assign({}, field, { AttributeName: expressionValueName(field.AttributeName) }),
 			value,
 		}))
 	),
@@ -76,7 +100,7 @@ const updateItem = async(dynamoDb, { table, key, fieldValues }) => dynamoDb.upda
 		buildUpdateWithValues({ table, key, fieldValues }),
 		{
 			UpdateExpression: `SET ` + fieldValues.map(
-				({ field }) => `${ field.AttributeName } = ${ expressionName(field.AttributeName) }`
+				({ field }) => `${ expressionNameName(field.AttributeName) } = ${ expressionValueName(field.AttributeName) }`
 			).join(`, `),
 		}
 	)
@@ -91,16 +115,23 @@ const getItem = async(dynamoDb, { tableName, key, resultFields }) => {
 	}).promise()
 
 	const item = data.Item
+
+	if (!item) {
+		return null
+	}
+
 	const output = {}
 
 	resultFields.forEach(field => {
-		output[field] = getField(item, field)
+		output[field.AttributeName] = getField(item, field)
 	})
 
 	return output
 }
 
-const getField = (item, field) => deserialize(field.AttributeType, item[field.AttributeName][field.AttributeType])
+const getField = (item, field) => item[field.AttributeName]
+	? deserialize(field.AttributeType, item[field.AttributeName][field.AttributeType])
+	: null
 
 
 
@@ -127,13 +158,13 @@ const getPlayerId = async(dynamoDb, secret) => getItem(dynamoDb, {
 	resultFields: [
 		playerSecret.playerId,
 	],
-}).then(playerResult => playerResult && playerResult.playerId)
+}).then(playerSecretResult => playerSecretResult && playerSecretResult.playerId)
 
 const getPlayerIdOrThrow = async(dynamoDb, secret) => {
 	const playerId = await getPlayerId(dynamoDb, secret)
 
 	if (!playerId) {
-		throw new Error(`No playerId found for player secret ${ playerSecret }`)
+		throw new Error(`No playerId found for player secret ${ secret }`)
 	}
 
 	return playerId
@@ -142,21 +173,22 @@ const getPlayerIdOrThrow = async(dynamoDb, secret) => {
 const freshSeed = count => new Array(count).fill(1)
 
 const getSeed = async(dynamoDb, { gameId, field, count }) => {
-	const response = getItem(dynamoDb, {
+	const response = await getItem(dynamoDb, {
 		tableName: `game`,
-		key: { field: game.gameId, value: gameId },
-		resultFields: field,
+		key: { field: game.id, value: gameId },
+		resultFields: [ field ],
 	})
+
 	const seed = response && response[field.AttributeName]
 
-	if (seed === null) {
-		return freshSeed(count)
-	} else {
+	if (seed) {
 		const seedArray = seed.split(SEED_NUMBER_SEPARATOR)
 
 		return seedArray.length === count
 			? seedArray.map(str => parseInt(str, 10))
 			: freshSeed(count)
+	} else {
+		return freshSeed(count)
 	}
 }
 
@@ -170,7 +202,7 @@ const getRandomIndexUsingSeed = async(dynamoDb, { gameId, field, count }) => {
 
 	updateItem(dynamoDb, {
 		table: `game`,
-		key: { field: game.gameId, value: gameId },
+		key: { field: game.id, value: gameId },
 		fieldValues: [{ field, value: newSeed }],
 	})
 
@@ -190,7 +222,7 @@ const createGame = async dynamoDb => {
 	await putItemAndIncreaseTtl(dynamoDb, {
 		table: `game`,
 		fieldValues: [
-			{ field: game.gameId, value: gameId },
+			{ field: game.id, value: gameId },
 			{ field: game.active, value: false },
 		],
 	})
@@ -209,7 +241,7 @@ const addPlayerToGame = async(dynamoDb, gameId, secret) => {
 				fieldValues: [{ field: game.playerIds, value: [ playerId ] }],
 			}),
 			{
-				UpdateExpression: `ADD ${ game.playerIds.AttributeName } ${ expressionName(game.playerIds.AttributeName) }`,
+				UpdateExpression: `ADD ${ expressionNameName(game.playerIds.AttributeName) } ${ expressionValueName(game.playerIds.AttributeName) }`,
 			}
 		)
 	).promise()
@@ -224,7 +256,7 @@ const removePlayerFromGame = async(dynamoDb, gameId, playerId) => {
 				fieldValues: [{ field: game.playerIds, value: [ playerId ] }],
 			}),
 			{
-				UpdateExpression: `DELETE ${ game.playerIds.AttributeName } ${ expressionName(game.playerIds.AttributeName) }`,
+				UpdateExpression: `DELETE ${ expressionNameName(game.playerIds.AttributeName) } ${ expressionValueName(game.playerIds.AttributeName) }`,
 			}
 		)
 	).promise()
@@ -235,8 +267,8 @@ const setPlayerNameWithPlayerSecret = async(dynamoDb, secret, name) => {
 
 	await putItemAndIncreaseTtl(dynamoDb, {
 		table: `player`,
-		key: { field: player.id, value: playerId },
 		fieldValues: [
+			{ field: player.id, value: playerId },
 			{ field: player.name, value: name },
 		],
 	})
@@ -298,7 +330,7 @@ const createPlayer = async dynamoDb => {
 }
 
 const getGameInformation = async(dynamoDb, gameId) => {
-	const game = await getItem(dynamoDb, {
+	const gameResponse = await getItem(dynamoDb, {
 		tableName: `game`,
 		key: { field: game.id, value: gameId },
 		resultFields: [
@@ -309,7 +341,7 @@ const getGameInformation = async(dynamoDb, gameId) => {
 		],
 	})
 
-	if (!game) {
+	if (!gameResponse) {
 		return null
 	}
 
@@ -318,7 +350,7 @@ const getGameInformation = async(dynamoDb, gameId) => {
 		active,
 		firstPlayerId,
 		startTimestamp,
-	} = game
+	} = gameResponse
 
 	const playerNames = playerIds.length === 0
 		? []
@@ -330,11 +362,11 @@ const getGameInformation = async(dynamoDb, gameId) => {
 							[player.id.AttributeType]: serialize(player.id.AttributeType, playerId),
 						},
 					})),
+					AttributesToGet: [
+						player.name.AttributeName,
+					],
 				},
 			},
-			AttributesToGet: [
-				player.name.AttributeName,
-			],
 		}).promise().then(data => data.Responses.player.map(item => getField(item, player.name)))
 
 
@@ -385,7 +417,7 @@ const getPlayerGameInformation = async(dynamoDb, gameId, secret) => {
 		],
 	})
 
-	const role = roles[playerId]
+	const role = roles && roles[playerId]
 
 	return active
 		? {
@@ -397,7 +429,7 @@ const getPlayerGameInformation = async(dynamoDb, gameId, secret) => {
 
 const stopGame = async(dynamoDb, gameId) => updateItem(dynamoDb, {
 	table: `game`,
-	key: { field: game.gameId, value: gameId },
+	key: { field: game.id, value: gameId },
 	fieldValues: [{ field: game.active, value: false }],
 })
 
@@ -406,11 +438,12 @@ const startGame = async(dynamoDb, gameId) => {
 	const [ playerIds, locationIndex ] = await Promise.all([
 		getItem(dynamoDb, {
 			tableName: `game`,
-			key: { field: game.gameId, value: gameId },
+			key: { field: game.id, value: gameId },
 			resultFields: [
 				game.playerIds,
 			],
 		}).then(gameResponse => gameResponse.playerIds),
+
 		getRandomIndexUsingSeed(dynamoDb, { gameId, field: game.locationSeed, count: locations.length }),
 	])
 

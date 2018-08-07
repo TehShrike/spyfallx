@@ -20,13 +20,13 @@ const player = {
 
 const game = {
 	id: field(`id`, TYPE.STRING),
-	playerIds: field(`playerIds`, TYPE.NUMBER_SET),
+	playerIds: field(`playerIds`, TYPE.STRING_SET),
 	roles: field(`roles`, TYPE.MAP),
 	active: field(`active`, TYPE.BOOLEAN),
 	locationSeed: field(`locationSeed`, TYPE.STRING),
 	location: field(`location`, TYPE.STRING),
 	spySeed: field(`spySeed`, TYPE.STRING),
-	firstPlayerId: field(`firstPlayerId`, TYPE.NUMBER),
+	firstPlayerId: field(`firstPlayerId`, TYPE.STRING),
 	startTimestamp: field(`startTimestamp`, TYPE.STRING),
 	ttl: field(`ttl`, TYPE.NUMBER),
 }
