@@ -17,6 +17,7 @@
   "license": "WTFPL",
   "dependencies": {
     "array-shuffle": "1.0.1",
+    "aws-sdk": "2.287.0",
     "combine-arrays": "1.0.2",
     "gamblers-dice": "1.0.1",
     "glob-module-file": "2.2.0",

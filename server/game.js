@@ -34,6 +34,12 @@ game:roles:{gameId} = hash
 game:active:{gameId}
 */
 
+/*
+player: id (pk), secret (unique), name, ttl
+
+game: id (pk), players (set), roles (map of player ids to role), active, location-seed, location, spy-seed, first-player-id, start-timestamp, ttl
+*/
+
 const playerNameKey = playerId => `player:name:${ playerId }`
 const playerIdKey = playerSecret => `player:id:${ playerSecret }`
 const gamePlayersKey = gameId => `game:players:${ gameId }`
