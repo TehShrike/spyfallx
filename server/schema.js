@@ -1,11 +1,4 @@
-const TYPE = {
-	STRING: `S`,
-	NUMBER: `N`,
-	BINARY: `B`,
-	MAP: `M`,
-	NUMBER_SET: `NS`,
-	BOOLEAN: `BOOL`,
-}
+const TYPE = require(`./dynamo-types.js`)
 
 const field = (name, type) => ({
 	AttributeName: name,
@@ -15,6 +8,7 @@ const field = (name, type) => ({
 const playerSecret = {
 	secret: field(`secret`, TYPE.STRING),
 	playerId: field(`playerId`, TYPE.STRING),
+	ttl: field(`ttl`, TYPE.NUMBER),
 }
 
 const player = {
@@ -31,7 +25,7 @@ const game = {
 	active: field(`active`, TYPE.BOOLEAN),
 	locationSeed: field(`locationSeed`, TYPE.STRING),
 	location: field(`location`, TYPE.STRING),
-	spy_seed: field(`spy_seed`, TYPE.STRING),
+	spySeed: field(`spySeed`, TYPE.STRING),
 	firstPlayerId: field(`firstPlayerId`, TYPE.NUMBER),
 	startTimestamp: field(`startTimestamp`, TYPE.STRING),
 	ttl: field(`ttl`, TYPE.NUMBER),

@@ -1,7 +1,5 @@
 # game is broken without this
 
-- expire keys intelligently
-	- like, say, 30 minutes since the last time someone made a request about a game?
 - error messages for every failed response from the server
 
 # Shouldn't tell people about it without this

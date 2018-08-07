@@ -12,6 +12,16 @@ const KEY_TYPE = {
 }
 
 async function main() {
+	const currentTables = (await dynamoDb.listTables().promise()).TableNames
+	console.log(`currentTables:`, currentTables)
+	await Promise.all(
+		currentTables.map(
+			table => dynamoDb.deleteTable({
+				TableName: table,
+			}).promise()
+		)
+	)
+
 	await dynamoDb.createTable({
 		TableName: `playerSecret`,
 		AttributeDefinitions: [
@@ -25,7 +35,7 @@ async function main() {
 			ReadCapacityUnits: 5000,
 			WriteCapacityUnits: 500,
 		},
-	})
+	}).promise()
 
 	await dynamoDb.createTable({
 		TableName: `player`,

@@ -9,64 +9,128 @@ const generatePhonetic = require(`phonetic`).generate
 const locations = require(`../shared/locations.js`)
 const makeShuffler = require(`./shuffler.js`)
 
+const TYPE = require(`./dynamo-types.js`)
+const TABLES = require(`./schema.js`)
+const {
+	playerSecret,
+	player,
+	game,
+} = TABLES
+
 const SEED_NUMBER_SEPARATOR = ` `
 const SPY = `Spy`
 
-/*
-data structures
+const swich = (value, map) => (map[value] || map.def)()
 
-games have players
-games have locations
-games have an id
-games track which players have which roles
-games can be in the middle of a round, or not
-players have names
-players have a secret that identifies the browser session
-players have a public id that identifies them to other clients
-your public player id can be derived from your secret player id
-your role in a game can only be derived from your secret
+const serialize = (AttributeType, value) => swich(AttributeType, {
+	[TYPE.NUMBER]: () => value.toString(),
+	[TYPE.NUMBER_SET]: () => value.map(number => number.toString()),
+	def: () => value,
+})
 
-player:name:{playerId} = name
-player:id:{secret} = id
-game:players:{gameId} = set of player ids
-game:roles:{gameId} = hash
-	{playerId} = role
-game:active:{gameId}
-*/
+const deserialize = (AttributeType, value) => swich(AttributeType, {
+	[TYPE.NUMBER]: () => parseFloat(value, 10),
+	[TYPE.NUMBER_SET]: () => value.map(str => parseFloat(str, 10)),
+	def: () => value,
+})
 
-/*
-player: id (pk), secret (unique), name, ttl
+const dynamoFieldProperty = (field, value) => ({
+	[field.AttributeName]: {
+		[field.AttributeType]: serialize(field.AttributeType, value),
+	},
+})
 
-game: id (pk), players (set), roles (map of player ids to role), active, location-seed, location, spy-seed, first-player-id, start-timestamp, ttl
-*/
+const dynamoFieldObject = fieldValues => Object.assign(
+	...fieldValues.map(({ field, value }) => dynamoFieldProperty(field, value))
+)
 
-const playerNameKey = playerId => `player:name:${ playerId }`
-const playerIdKey = playerSecret => `player:id:${ playerSecret }`
-const gamePlayersKey = gameId => `game:players:${ gameId }`
-const gameRolesKey = gameId => `game:roles:${ gameId }`
-const gameActiveKey = gameId => `game:active:${ gameId }`
-const gameLocationSeedKey = gameId => `game:location-seed:${ gameId }`
-const gameLocationKey = gameId => `game:location:${ gameId }`
-const gameSpySeedKey = gameId => `game:spy-seed:${ gameId }`
-const gameFirstPlayerKey = gameId => `game:first-player-id:${ gameId }`
-const gameStartTimestamp = gameId => `game:start-timestamp:${ gameId }`
+const expressionName = AttributeName => `:` + AttributeName
+
+const currentTimestampSeconds = () => Math.round(Date.now() / 1000)
+const defaultTtlSeconds = () => currentTimestampSeconds() + (60 * 60 * 24)
+
+const putItemAndIncreaseTtl = async(dynamoDb, { table, fieldValues }) => putItem(dynamoDb, {
+	table,
+	fieldValues: [{ field: TABLES[table].ttl, value: defaultTtlSeconds() }, ...fieldValues ],
+})
+
+
+const putItem = async(dynamoDb, { table, fieldValues }) => dynamoDb.putItem({
+	TableName: table,
+	Item: dynamoFieldObject(fieldValues),
+}).promise()
+
+const buildUpdateWithValues = ({ table, key, fieldValues }) => ({
+	TableName: table,
+	Key: dynamoFieldProperty(key.field, key.value),
+	ExpressionAttributeValues: dynamoFieldObject(
+		fieldValues.map(({ field, value }) => ({
+			field: Object.assign({}, field, { AttributeName: expressionName(field.AttributeName) }),
+			value,
+		}))
+	),
+})
+
+const updateItem = async(dynamoDb, { table, key, fieldValues }) => dynamoDb.updateItem(
+	Object.assign(
+		buildUpdateWithValues({ table, key, fieldValues }),
+		{
+			UpdateExpression: `SET ` + fieldValues.map(
+				({ field }) => `${ field.AttributeName } = ${ expressionName(field.AttributeName) }`
+			).join(`, `),
+		}
+	)
+).promise()
+
+const getItem = async(dynamoDb, { tableName, key, resultFields }) => {
+	const data = await dynamoDb.getItem({
+		TableName: tableName,
+		Key: dynamoFieldObject([ key ]),
+		AttributesToGet: resultFields.map(({ AttributeName }) => AttributeName),
+		ConsistentRead: true,
+	}).promise()
+
+	const item = data.Item
+	const output = {}
+
+	resultFields.forEach(field => {
+		output[field] = getField(item, field)
+	})
+
+	return output
+}
+
+const getField = (item, field) => deserialize(field.AttributeType, item[field.AttributeName][field.AttributeType])
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 const generateGameId = () => reandom.generate(5)
 
-const NOT_FOUND = {}
+const getPlayerId = async(dynamoDb, secret) => getItem(dynamoDb, {
+	tableName: `playerSecret`,
+	key: { field: playerSecret.secret, value: secret },
+	resultFields: [
+		playerSecret.playerId,
+	],
+}).then(playerResult => playerResult && playerResult.playerId)
 
-const getGameActive = async(client, gameId) => {
-	const result = await client.get(gameActiveKey(gameId))
-
-	if (!result) {
-		return NOT_FOUND
-	}
-
-	return result === `1`
-}
-
-const getPlayerIdOrThrow = async(client, playerSecret) => {
-	const playerId = await getPlayerId(client, playerSecret)
+const getPlayerIdOrThrow = async(dynamoDb, secret) => {
+	const playerId = await getPlayerId(dynamoDb, secret)
 
 	if (!playerId) {
 		throw new Error(`No playerId found for player secret ${ playerSecret }`)
@@ -75,16 +139,16 @@ const getPlayerIdOrThrow = async(client, playerSecret) => {
 	return playerId
 }
 
-const setPlayerNameWithPlayerId = async(client, playerId, name) => {
-	await client.set(playerNameKey(playerId), name)
-}
-
-const getPlayerName = async(client, playerId) => await client.get(playerNameKey(playerId))
-
 const freshSeed = count => new Array(count).fill(1)
 
-const getSeed = async(client, key, count) => {
-	const seed = await client.get(key)
+const getSeed = async(dynamoDb, { gameId, field, count }) => {
+	const response = getItem(dynamoDb, {
+		tableName: `game`,
+		key: { field: game.gameId, value: gameId },
+		resultFields: field,
+	})
+	const seed = response && response[field.AttributeName]
+
 	if (seed === null) {
 		return freshSeed(count)
 	} else {
@@ -96,57 +160,112 @@ const getSeed = async(client, key, count) => {
 	}
 }
 
-const getRandomIndexUsingSeed = async(client, key, count) => {
-	const seedArray = await getSeed(client, key, count)
+const getRandomIndexUsingSeed = async(dynamoDb, { gameId, field, count }) => {
+	const seedArray = await getSeed(dynamoDb, { gameId, field, count })
 
 	const die = new Die()
 	die.state = seedArray
 	const index = die.roll() - 1
 	const newSeed = die.state.join(SEED_NUMBER_SEPARATOR)
 
-	await client.set(key, newSeed)
+	updateItem(dynamoDb, {
+		table: `game`,
+		key: { field: game.gameId, value: gameId },
+		fieldValues: [{ field, value: newSeed }],
+	})
 
 	return index
 }
 
-const getPlayerRole = async(client, gameId, playerId) => client.hget(gameRolesKey(gameId), playerId)
-const getPlayerIdsInGame = async(client, gameId) => client.smembers(gamePlayersKey(gameId))
+// const getPlayerIdsInGame = async(dynamoDb, gameId) => client.smembers(gamePlayersKey(gameId))
 
 
 
 
 
 
-const createGame = async client => {
+const createGame = async dynamoDb => {
 	const gameId = generateGameId()
-	await client.set(gameActiveKey(gameId), `0`)
+
+	await putItemAndIncreaseTtl(dynamoDb, {
+		table: `game`,
+		fieldValues: [
+			{ field: game.gameId, value: gameId },
+			{ field: game.active, value: false },
+		],
+	})
+
 	return gameId
 }
 
-const getPlayerId = (client, playerSecret) => client.get(playerIdKey(playerSecret))
+const addPlayerToGame = async(dynamoDb, gameId, secret) => {
+	const playerId = await getPlayerIdOrThrow(dynamoDb, secret)
 
-const addPlayerToGame = async(client, gameId, playerSecret) => {
-	const playerId = await getPlayerIdOrThrow(client, playerSecret)
-
-	await client.sadd(gamePlayersKey(gameId), playerId)
+	await dynamoDb.updateItem(
+		Object.assign(
+			buildUpdateWithValues({
+				table: `game`,
+				key: { field: game.id, value: gameId },
+				fieldValues: [{ field: game.playerIds, value: [ playerId ] }],
+			}),
+			{
+				UpdateExpression: `ADD ${ game.playerIds.AttributeName } ${ expressionName(game.playerIds.AttributeName) }`,
+			}
+		)
+	).promise()
 }
 
-const removePlayerFromGame = async(client, gameId, playerId) => client.srem(gamePlayersKey(gameId), playerId)
-
-const setPlayerNameWithPlayerSecret = async(client, playerSecret, name) => {
-	const playerId = await getPlayerIdOrThrow(client, playerSecret)
-
-	await setPlayerNameWithPlayerId(client, playerId, name)
+const removePlayerFromGame = async(dynamoDb, gameId, playerId) => {
+	await dynamoDb.updateItem(
+		Object.assign(
+			buildUpdateWithValues({
+				table: `game`,
+				key: { field: game.id, value: gameId },
+				fieldValues: [{ field: game.playerIds, value: [ playerId ] }],
+			}),
+			{
+				UpdateExpression: `DELETE ${ game.playerIds.AttributeName } ${ expressionName(game.playerIds.AttributeName) }`,
+			}
+		)
+	).promise()
 }
 
-const playerIsAuthedToGame = async(client, gameId, playerSecret) => !!await client.sismember(
-	gamePlayersKey(gameId),
-	await getPlayerIdOrThrow(client, playerSecret)
-)
+const setPlayerNameWithPlayerSecret = async(dynamoDb, secret, name) => {
+	const playerId = await getPlayerIdOrThrow(dynamoDb, secret)
 
-const createPlayer = async client => {
+	await putItemAndIncreaseTtl(dynamoDb, {
+		table: `player`,
+		key: { field: player.id, value: playerId },
+		fieldValues: [
+			{ field: player.name, value: name },
+		],
+	})
+}
+
+const playerIsAuthedToGame = async(dynamoDb, gameId, secret) => {
+	const [
+		playerId,
+		playerIdsInGame,
+	] = await Promise.all([
+		getPlayerIdOrThrow(dynamoDb, secret),
+
+		getItem(dynamoDb, {
+			tableName: `game`,
+			key: { field: game.id, value: gameId },
+			resultFields: [
+				game.playerIds,
+			],
+		}).then(gameResult => gameResult ? gameResult.playerIds : []),
+	])
+
+	const playerIdsSet = new Set(playerIdsInGame)
+
+	return playerIdsSet.has(playerId)
+}
+
+const createPlayer = async dynamoDb => {
 	const playerId = makeUuid()
-	const playerSecret = makeUuid()
+	const secret = makeUuid()
 
 	const defaultPlayerName = generatePhonetic({
 		syllables: 2,
@@ -154,90 +273,145 @@ const createPlayer = async client => {
 	})
 
 	await Promise.all([
-		setPlayerNameWithPlayerId(client, playerId, defaultPlayerName),
-		client.set(playerIdKey(playerSecret), playerId),
+		putItemAndIncreaseTtl(dynamoDb, {
+			table: `player`,
+			fieldValues: [
+				{ field: player.id, value: playerId },
+				{ field: player.secret, value: secret },
+				{ field: player.name, value: defaultPlayerName },
+			],
+		}),
+
+		putItemAndIncreaseTtl(dynamoDb, {
+			table: `playerSecret`,
+			fieldValues: [
+				{ field: playerSecret.secret, value: secret },
+				{ field: playerSecret.playerId, value: playerId },
+			],
+		}),
 	])
 
 	return {
 		playerId,
-		playerSecret,
+		playerSecret: secret,
 	}
 }
 
-const getGameInformation = async(client, gameId) => {
-	const playerIdsInRoom = await getPlayerIdsInGame(client, gameId)
+const getGameInformation = async(dynamoDb, gameId) => {
+	const game = await getItem(dynamoDb, {
+		tableName: `game`,
+		key: { field: game.id, value: gameId },
+		resultFields: [
+			game.playerIds,
+			game.active,
+			game.firstPlayerId,
+			game.startTimestamp,
+		],
+	})
 
-	const [
-		activePlayerIdsInGame,
-		gameActive,
-		firstPlayerId,
-		startTimestampString,
-		...playerNames
-	] = await Promise.all([
-		client.hkeys(gameRolesKey(gameId)),
-		getGameActive(client, gameId),
-		client.get(gameFirstPlayerKey(gameId)),
-		client.get(gameStartTimestamp(gameId)),
-		...playerIdsInRoom.map(playerId => getPlayerName(client, playerId)),
-	])
-
-	if (gameActive === NOT_FOUND) {
+	if (!game) {
 		return null
 	}
 
+	const {
+		playerIds,
+		active,
+		firstPlayerId,
+		startTimestamp,
+	} = game
+
+	const playerNames = playerIds.length === 0
+		? []
+		: await dynamoDb.batchGetItem({
+			RequestItems: {
+				player: {
+					Keys: playerIds.map(playerId => ({
+						id: {
+							[player.id.AttributeType]: serialize(player.id.AttributeType, playerId),
+						},
+					})),
+				},
+			},
+			AttributesToGet: [
+				player.name.AttributeName,
+			],
+		}).promise().then(data => data.Responses.player.map(item => getField(item, player.name)))
+
+
 	const playersAndNames = combine({
-		playerId: playerIdsInRoom,
+		playerId: playerIds,
 		name: playerNames,
 	})
 
-	if (!gameActive) {
+	if (!active) {
 		return {
-			gameActive,
+			gameActive: active,
 			playersInRoom: playersAndNames,
 		}
 	}
 
-	const elapsedTimeMs = Date.now() - parseInt(startTimestampString, 10)
+	const elapsedTimeMs = Date.now() - startTimestamp
 
-	const activePlayerIdsSet = new Set(activePlayerIdsInGame)
+	const activePlayerIdsSet = new Set(playerIds)
 
-	const playersInRoom = playersAndNames.map(player => Object.assign(player, {
-		active: activePlayerIdsSet.has(player.playerId),
-	}))
+	const playersInRoom = playersAndNames.map(player =>
+		Object.assign(player, {
+			active: activePlayerIdsSet.has(player.playerId),
+		})
+	)
 
 	return {
-		gameActive,
+		gameActive: active,
 		playersInRoom,
 		firstPlayerId,
 		elapsedTimeMs,
 	}
 }
 
-const getPlayerGameInformation = async(client, gameId, playerSecret) => {
-	const gameActivePromise = getGameActive(client, gameId)
-	const locationPromise = client.get(gameLocationKey(gameId))
+const getPlayerGameInformation = async(dynamoDb, gameId, secret) => {
+	const playerId = await getPlayerIdOrThrow(dynamoDb, secret)
 
-	const playerId = await getPlayerId(client, playerSecret)
+	const {
+		active,
+		location,
+		roles,
+	} = await getItem(dynamoDb, {
+		tableName: `game`,
+		key: { field: game.id, value: gameId },
+		resultFields: [
+			game.active,
+			game.location,
+			game.roles,
+		],
+	})
 
+	const role = roles[playerId]
 
-	const [ role, location ] = await Promise.all([
-		getPlayerRole(client, gameId, playerId),
-		locationPromise,
-		gameActivePromise,
-	])
-
-	return {
-		role,
-		location: role === SPY ? null : location,
-	}
+	return active
+		? {
+			role,
+			location: role === SPY ? null : location,
+		}
+		: {}
 }
 
-const stopGame = (client, gameId) => client.set(gameActiveKey(gameId), `0`)
+const stopGame = async(dynamoDb, gameId) => updateItem(dynamoDb, {
+	table: `game`,
+	key: { field: game.gameId, value: gameId },
+	fieldValues: [{ field: game.active, value: false }],
+})
 
-const startGame = async(client, gameId) => {
+
+const startGame = async(dynamoDb, gameId) => {
 	const [ playerIds, locationIndex ] = await Promise.all([
-		getPlayerIdsInGame(client, gameId),
-		getRandomIndexUsingSeed(client, gameLocationSeedKey(gameId), locations.length),
+		getItem(dynamoDb, {
+			tableName: `game`,
+			key: { field: game.gameId, value: gameId },
+			resultFields: [
+				game.playerIds,
+			],
+		}).then(gameResponse => gameResponse.playerIds),
+		getRandomIndexUsingSeed(dynamoDb, { gameId, field: game.locationSeed, count: locations.length }),
 	])
 
 	const playerCount = playerIds.length
@@ -247,20 +421,10 @@ const startGame = async(client, gameId) => {
 	}
 
 	const firstPlayerId = playerIds[random(playerCount - 1)]
-
 	const location = locations[locationIndex]
-
-	const [ spyIndex ] = await Promise.all([
-		getRandomIndexUsingSeed(client, gameSpySeedKey(gameId), playerIds.length),
-		client.mset({
-			[gameActiveKey(gameId)]: `1`,
-			[gameLocationKey(gameId)]: location.name,
-			[gameFirstPlayerKey(gameId)]: firstPlayerId,
-			[gameStartTimestamp(gameId)]: Date.now(),
-		}),
-	])
-
 	const getNextRole = makeShuffler(location.roles)
+
+	const spyIndex = await getRandomIndexUsingSeed(dynamoDb, { gameId, field: game.spySeed, count: playerIds.length })
 
 	const playerRoles = playerIds.map((_, index) => {
 		if (index === spyIndex) {
@@ -270,17 +434,23 @@ const startGame = async(client, gameId) => {
 		}
 	})
 
-	const playerRoleHash = new Map(
-		combine({
-			playerId: playerIds,
-			role: playerRoles,
-		}).map(({ playerId, role }) => [ playerId, role ])
-	)
+	const playerRoleMap = {}
+	combine({
+		playerId: playerIds,
+		role: playerRoles,
+	}).forEach(({ playerId, role }) => playerRoleMap[playerId] = role)
 
-	await client.hmset([
-		gameRolesKey(gameId),
-		playerRoleHash,
-	])
+	await updateItem(dynamoDb, {
+		table: `game`,
+		key: { field: game.id, value: gameId },
+		fieldValues: [
+			{ field: game.active, value: true },
+			{ field: game.location, value: location.name },
+			{ field: game.firstPlayerId, value: firstPlayerId },
+			{ field: game.startTimestamp, value: Date.now() },
+			{ field: game.roles, value: playerRoleMap },
+		],
+	})
 
 	return {
 		success: true,

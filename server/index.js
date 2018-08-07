@@ -9,7 +9,7 @@ const etag = require(`koa-etag`)
 const send = require(`koa-send`)
 const koaBody = require(`koa-body`)
 
-const Redis = require(`ioredis`)
+const dynamoDb = require(`./dynamodb-instance.js`)
 
 const relative = path => require(`path`).join(__dirname, path)
 const buildPath = relative(`../public/build`)
@@ -31,28 +31,8 @@ const {
 
 startServer(process.env.PORT || 8888)
 
-const deployedToAws = !!process.env.UP_STAGE
-const redisHost = deployedToAws ? `spyfall-db.l8ndwu.0001.use1.cache.amazonaws.com` : `localhost`
-
-const getRedis = () => new Redis({
-	host: redisHost,
-	port: 6379,
-})
-
-
-const connectOrThrow = () => new Promise((resolve, reject) => {
-	const client = getRedis()
-
-	client.on(`connect`, () => resolve(client))
-	client.on(`error`, e => reject(e))
-})
-
-const runWithRedis = async fn => {
-	const client = await connectOrThrow()
-
-	await fn(client)
-
-	client.quit()
+const runWithDynamo = async fn => {
+	await fn(dynamoDb)
 }
 
 const success = (context, body) => context.body = Object.assign({
@@ -71,6 +51,7 @@ function startServer(port) {
 		try {
 			await next()
 		} catch (err) {
+			console.error(err)
 			context.status = err.status || 500
 			context.body = {
 				success: false,
@@ -87,14 +68,14 @@ function startServer(port) {
 			'/api/game/:gameId/player/:playerSecret': async context => {
 				const { gameId, playerSecret } = context.params
 
-				await runWithRedis(async client => {
+				await runWithDynamo(async client => {
 					success(context, await getPlayerGameInformation(client, gameId, playerSecret))
 				})
 			},
 			'/api/game/:gameId': async context => {
 				const { gameId } = context.params
 
-				await runWithRedis(async client => {
+				await runWithDynamo(async client => {
 					const game = await getGameInformation(client, gameId)
 
 					if (game) {
@@ -111,7 +92,7 @@ function startServer(port) {
 			'/api/player-id/:playerSecret': async context => {
 				const { playerSecret } = context.params
 
-				await runWithRedis(async client => {
+				await runWithDynamo(async client => {
 					const playerId = await getPlayerId(client, playerSecret)
 
 					success(context, {
@@ -131,14 +112,14 @@ function startServer(port) {
 			'/api/set-name': async context => {
 				const { name, playerSecret } = context.request.body
 
-				await runWithRedis(async client => {
+				await runWithDynamo(async client => {
 					await setPlayerNameWithPlayerSecret(client, playerSecret, name)
 
 					success(context)
 				})
 			},
 			'/api/create': async context => {
-				await runWithRedis(async client => {
+				await runWithDynamo(async client => {
 					const gameId = await createGame(client)
 
 					success(context, {
@@ -149,7 +130,7 @@ function startServer(port) {
 			'/api/join-game': async context => {
 				const { gameId, playerSecret } = context.request.body
 
-				await runWithRedis(async client => {
+				await runWithDynamo(async client => {
 					await addPlayerToGame(client, gameId, playerSecret)
 
 					success(context)
@@ -158,7 +139,7 @@ function startServer(port) {
 			'/api/remove-from-game': async context => {
 				const { gameId, playerId } = context.request.body
 
-				await runWithRedis(async client => {
+				await runWithDynamo(async client => {
 					await removePlayerFromGame(client, gameId, playerId)
 
 					success(context)
@@ -167,7 +148,7 @@ function startServer(port) {
 			'/api/start-game': async context => {
 				const { gameId, playerSecret } = context.request.body
 
-				await runWithRedis(async client => {
+				await runWithDynamo(async client => {
 					const authed = await playerIsAuthedToGame(client, gameId, playerSecret)
 
 					if (authed) {
@@ -183,7 +164,7 @@ function startServer(port) {
 			'/api/stop-game': async context => {
 				const { gameId, playerSecret } = context.request.body
 
-				await runWithRedis(async client => {
+				await runWithDynamo(async client => {
 					const authed = await playerIsAuthedToGame(client, gameId, playerSecret)
 
 					if (authed) {
@@ -196,7 +177,7 @@ function startServer(port) {
 				})
 			},
 			'/api/create-player': async context => {
-				await runWithRedis(async client => {
+				await runWithDynamo(async client => {
 					const { playerId, playerSecret } = await createPlayer(client)
 
 					success(context, {
