@@ -26,7 +26,7 @@ const swich = (value, map) => (map[value] || map.def)()
 const oMap = (object, fn) => {
 	const output = {}
 
-	Object.entries(([ key, value ]) => {
+	Object.entries(object).forEach(([ key, value ]) => {
 		output[key] = fn(value)
 	})
 
@@ -46,6 +46,7 @@ const serialize = (AttributeType, value) => swich(AttributeType, {
 const deserialize = (AttributeType, value) => swich(AttributeType, {
 	[TYPE.NUMBER]: () => parseFloat(value, 10),
 	[TYPE.NUMBER_SET]: () => value.map(str => parseFloat(str, 10)),
+	[TYPE.MAP]: () => oMap(value, object => object[TYPE.STRING]),
 	def: () => value,
 })
 
