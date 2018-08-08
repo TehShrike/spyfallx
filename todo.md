@@ -1,6 +1,12 @@
+# deploy the new branch
+
+- run the schema creation script pointed at AWS
+- turn on TTL for the database
+
 # game is broken without this
 
 - error messages for every failed response from the server
+	- working reasonably well on the game page, but not the index
 
 # Shouldn't tell people about it without this
 
@@ -27,6 +33,10 @@
 	- the dark background as highlight around your role/location isn't great?
 - add a robots.txt that blocks everything when deploying to staging
 	- add a `cp` command to the circle.yml file for the staging deploy
+- make the polling cheaper while the game is active
+	- use the game id + game start timestamp to poll a new endpoint that just returns whether or not that game is still active and has the same game start timestamp
+	- only start hitting the other two endpoints if it returns false
+	- once the game is active again, go back to polling the cheap endpoint
 
 # would be nice to have
 
@@ -34,11 +44,4 @@
 	- https://github.com/mpcovcd/spyfall/blob/master/spyfall/lib/locations2.js
 	- https://github.com/mpcovcd/spyfall/blob/master/spyfall/i18n/en.i18n.json
 - internationalization
-- a readme that gives a slightly better introduction - maybe with some of the rational from the about page
-
-# deploy
-
-- make sure the subnets have plenty of IPs available
-	- http://www.subnet-calculator.com/cidr.php
-- set up a public/private subnet in two availability zones mebbe
-- script the AWS environment setup?
+- a readme that gives a slightly better introduction - maybe with some of the rationale from the about page
