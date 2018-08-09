@@ -1,4 +1,3 @@
-// const AWS = require(`aws-sdk`)
 const DynamoDB = require(`aws-sdk/clients/dynamodb`)
 
 const deployedToAws = !!process.env.UP_STAGE

@@ -1,9 +1,5 @@
-const TYPE = require(`./dynamo-types.js`)
-
-const field = (name, type) => ({
-	AttributeName: name,
-	AttributeType: type,
-})
+const TYPE = require(`./dynamodb/types.js`)
+const { makeFieldObject: field } = require(`./dynamodb/helpers`)
 
 const playerSecret = {
 	secret: field(`secret`, TYPE.STRING),

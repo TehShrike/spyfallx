@@ -1,4 +1,4 @@
-const TYPE = require(`./dynamo-types.js`)
+const TYPE = require(`./types.js`)
 
 const swich = (value, map) => (map[value] || map.def)()
 
@@ -106,7 +106,10 @@ const getField = (item, field) => item[field.AttributeName]
 	? deserialize(field.AttributeType, item[field.AttributeName][field.AttributeType])
 	: null
 
-
+const makeFieldObject = (name, type) => ({
+	AttributeName: name,
+	AttributeType: type,
+})
 
 
 module.exports = {
@@ -118,4 +121,5 @@ module.exports = {
 	expressionValueName,
 	serialize,
 	getField,
+	makeFieldObject,
 }

@@ -25,7 +25,7 @@ const {
 	expressionValueName,
 	serialize,
 	getField,
-} = require(`./dynamo-helpers.js`)
+} = require(`./dynamodb/helpers.js`)
 
 const SEED_NUMBER_SEPARATOR = ` `
 const SPY = `Spy`
