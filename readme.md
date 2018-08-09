@@ -8,10 +8,11 @@ If you want to make a change that alters the gameplay, open an issue first so we
 
 Install [DynamoDB](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/DynamoDBLocal.html).  Extract it somewhere like `~/dynamodb_local_latest`
 
-Run DynamoDB locally in some terminal tab:
+Run DynamoDB locally in some terminal tab and run the schema-creation script:
 
 ```sh
 java -Djava.library.path=~/dynamodb_local_latest/DynamoDBLocal_lib -jar ~/dynamodb_local_latest/DynamoDBLocal.jar -sharedDb
+npm run create-schema
 ```
 
 Clone the repo, install, run:
