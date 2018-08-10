@@ -15,13 +15,15 @@
 	"lambda": {
 		"warm": true,
 		"warm_count": 10,
-		"vpc": {
-			"subnets": [
-				"subnet-868c4fb8"
-			],
-			"security_groups": [
-				"sg-3e311274"
+		"policy": [{
+			"Effect": "Allow",
+			"Resource": "*",
+			"Action": [
+				"dynamodb:Get*",
+				"dynamodb:List*",
+				"dynamodb:PutItem",
+				"dynamodb:DeleteItem"
 			]
-		}
+		}]
 	}
 }
