@@ -6,8 +6,9 @@
   "scripts": {
     "test": "glob-module-file --pattern=\"+(server|shared)/**/*.test.js\" --format=cjs | node",
     "build": "node build-location-map.js && svelte compile client/GameState.html --format=es --output=public/build/game-state.js",
-    "serve": "node server/index.js",
-    "dev": "NODE_DEBUG=ioredis:* nodemon ./server/index.js",
+    "dynamodb": "java -Djava.library.path=~/dynamodb_local_latest/DynamoDBLocal_lib -jar ~/dynamodb_local_latest/DynamoDBLocal.jar -sharedDb",
+    "create-schema": "node create-schema.js",
+    "dev": "nodemon ./server/index.js",
     "start": "node server/index.js"
   },
   "keywords": [
@@ -17,11 +18,11 @@
   "license": "WTFPL",
   "dependencies": {
     "array-shuffle": "1.0.1",
+    "aws-sdk": "2.287.0",
     "combine-arrays": "1.0.2",
     "gamblers-dice": "1.0.1",
     "glob-module-file": "2.2.0",
     "hard-rejection": "1.0.0",
-    "ioredis": "3.2.2",
     "just-uuid4": "1.0.0",
     "koa": "^2.5.0",
     "koa-bestest-router": "^1.0.2",
