@@ -1,8 +1,3 @@
-# deploy the new branch
-
-- run the schema creation script pointed at AWS
-- turn on TTL for the database
-
 # game is broken without this
 
 - error messages for every failed response from the server
@@ -38,6 +33,7 @@
 	- only start hitting the other two endpoints if it returns false
 	- once the game is active again, go back to polling the cheap endpoint
 - disable the "start game" button when there are less than three players in the game
+- call [updateTimeToLive](https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB.html#updateTimeToLive-property) from the schema creation script
 
 # would be nice to have
 
