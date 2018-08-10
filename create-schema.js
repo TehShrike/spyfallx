@@ -1,3 +1,5 @@
+// process.env.AWS_PROFILE = `josh`
+
 const dynamoDb = require(`./server/dynamodb-instance.js`)
 
 const {
