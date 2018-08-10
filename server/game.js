@@ -8,6 +8,7 @@ const generatePhonetic = require(`phonetic`).generate
 
 const locations = require(`../shared/locations.js`)
 const makeShuffler = require(`./shuffler.js`)
+const throwKnownError = require(`./throw-known-error.js`)
 
 const TABLES = require(`./schema.js`)
 const {
@@ -62,7 +63,7 @@ const getPlayerIdOrThrow = async(dynamoDb, secret) => {
 	const playerId = await getPlayerId(dynamoDb, secret)
 
 	if (!playerId) {
-		throw new Error(`No playerId found for player secret ${ secret }`)
+		throwKnownError(`No playerId found for player secret ${ secret }`)
 	}
 
 	return playerId
@@ -129,7 +130,20 @@ const createGame = async dynamoDb => {
 }
 
 const addPlayerToGame = async(dynamoDb, gameId, secret) => {
-	const playerId = await getPlayerIdOrThrow(dynamoDb, secret)
+	const [ playerId, gameExists ] = await Promise.all([
+		getPlayerIdOrThrow(dynamoDb, secret),
+		getItem(dynamoDb, {
+			tableName: `game`,
+			key: { field: game.id, value: gameId },
+			resultFields: [
+				game.id,
+			],
+		}).then(gameResult => !!gameResult),
+	])
+
+	if (!gameExists) {
+		throwKnownError(`Game id ${ gameId } does not exist`)
+	}
 
 	await dynamoDb.updateItem(
 		Object.assign(
@@ -348,7 +362,7 @@ const startGame = async(dynamoDb, gameId) => {
 	const playerCount = playerIds.length
 
 	if (playerCount < 3) {
-		throw new Error(`You can't start a game with less than three players`)
+		throwKnownError(`You can't start a game with less than three players`)
 	}
 
 	const firstPlayerId = playerIds[random(playerCount - 1)]

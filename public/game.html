@@ -23,12 +23,12 @@
 
 		<div data-when=loading class="center">Loading...</div>
 
-		<div data-when=done-loading>
-			<div id="game-state-target"></div>
-		</div>
-
 		<div id=error-message data-when=error class="center">
 
+		</div>
+
+		<div data-when=done-loading>
+			<div id="game-state-target"></div>
 		</div>
 
 		<div data-when=error class="center">
@@ -87,7 +87,7 @@
 				},
 			})
 
-			const handle500 = async promise => {
+			const handleError = async promise => {
 				try {
 					return await promise
 				} catch (err) {
@@ -96,7 +96,6 @@
 							errorMessageElement.innerText = body.message
 						}
 					})
-					view.destroy()
 
 					document.body.dataset.error = true
 
@@ -104,17 +103,17 @@
 				}
 			}
 
-			const postWithErrorHandling = (...args) => handle500(post(...args))
+			const postWithErrorHandling = (...args) => handleError(post(...args))
 
 			const init = async() => {
-				const { playerId, playerSecret } = await handle500(getPlayerDeetz())
+				const { playerId, playerSecret } = await handleError(getPlayerDeetz())
 
 				view.set({
 					playerId,
 					locationNames: Object.keys(locationMap),
 				})
 
-				await post(`/api/join-game`, {
+				await postWithErrorHandling(`/api/join-game`, {
 					gameId,
 					playerSecret,
 				})
@@ -126,8 +125,8 @@
 						{ role, location },
 						{ gameActive, playersInRoom, firstPlayerId, elapsedTimeMs },
 					] = await Promise.all([
-						futch(`/api/game/${ encodeURIComponent(gameId) }/player/${ playerSecret }`),
-						futch(`/api/game/${ encodeURIComponent(gameId) }`),
+						handleError(futch(`/api/game/${ encodeURIComponent(gameId) }/player/${ playerSecret }`)),
+						handleError(futch(`/api/game/${ encodeURIComponent(gameId) }`)),
 					])
 
 					const locationObject = (gameActive && locationMap[location]) || null
@@ -150,19 +149,14 @@
 				}
 
 				try {
-					await handle500(loadGameState())
-				} catch (err) {
-					if (err.status === 404) {
+					await loadGameState()
+				} catch (response) {
+					if (response.status === 404) {
 						errorMessageElement.innerText = `Invalid game id!`
+						document.body.dataset.loading = false
 					} else {
-						err.json().then(body => {
-							if (body.message) {
-								errorMessageElement.innerText = body.message
-							}
-						})
+						handleError(Promise.reject(response))
 					}
-
-					document.body.dataset.loading = false
 
 					return
 				}

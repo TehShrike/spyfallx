@@ -37,6 +37,7 @@
 	- use the game id + game start timestamp to poll a new endpoint that just returns whether or not that game is still active and has the same game start timestamp
 	- only start hitting the other two endpoints if it returns false
 	- once the game is active again, go back to polling the cheap endpoint
+- disable the "start game" button when there are less than three players in the game
 
 # would be nice to have
 

@@ -51,8 +51,11 @@ function startServer(port) {
 		try {
 			await next()
 		} catch (err) {
-			console.error(`error:`, context.method, context.url)
-			console.error(err)
+			if (!err.known) {
+				console.error(`error:`, context.method, context.url)
+				console.error(err)
+			}
+
 			context.status = err.status || 500
 			context.body = {
 				success: false,
