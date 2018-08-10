@@ -108,7 +108,12 @@ const getRandomIndexUsingSeed = async(dynamoDb, { gameId, field, count }) => {
 	return index
 }
 
-// const getPlayerIdsInGame = async(dynamoDb, gameId) => client.smembers(gamePlayersKey(gameId))
+
+
+
+
+
+
 
 
 
