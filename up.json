@@ -22,7 +22,8 @@
 				"dynamodb:Get*",
 				"dynamodb:List*",
 				"dynamodb:PutItem",
-				"dynamodb:DeleteItem"
+				"dynamodb:DeleteItem",
+				"dynamodb:UpdateItem"
 			]
 		}]
 	}
