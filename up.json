@@ -23,7 +23,8 @@
 				"dynamodb:List*",
 				"dynamodb:PutItem",
 				"dynamodb:DeleteItem",
-				"dynamodb:UpdateItem"
+				"dynamodb:UpdateItem",
+				"dynamodb:BatchGetItem"
 			]
 		}]
 	}
