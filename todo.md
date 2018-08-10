@@ -2,7 +2,7 @@
 
 - error messages for every failed response from the server
 	- working reasonably well on the game page, but not the index
-In production, the names are jumping around like crazy.  Need to ignore the order in the response and sort deterministically
+- In production, the names are jumping around like crazy.  Need to ignore the order in the response and sort deterministically
 
 # Shouldn't tell people about it without this
 
