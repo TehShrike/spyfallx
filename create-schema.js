@@ -34,8 +34,8 @@ async function main() {
 			KeyType: KEY_TYPE.HASH,
 		}],
 		ProvisionedThroughput: {
-			ReadCapacityUnits: 5000,
-			WriteCapacityUnits: 500,
+			ReadCapacityUnits: 5,
+			WriteCapacityUnits: 5,
 		},
 	}).promise()
 
@@ -49,8 +49,8 @@ async function main() {
 			KeyType: KEY_TYPE.HASH,
 		}],
 		ProvisionedThroughput: {
-			ReadCapacityUnits: 5000,
-			WriteCapacityUnits: 500,
+			ReadCapacityUnits: 5,
+			WriteCapacityUnits: 5,
 		},
 	}).promise()
 
@@ -64,8 +64,8 @@ async function main() {
 			KeyType: KEY_TYPE.HASH,
 		}],
 		ProvisionedThroughput: {
-			ReadCapacityUnits: 5000,
-			WriteCapacityUnits: 500,
+			ReadCapacityUnits: 5,
+			WriteCapacityUnits: 5,
 		},
 	}).promise()
 }

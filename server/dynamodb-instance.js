@@ -1,8 +1,8 @@
 const DynamoDB = require(`aws-sdk/clients/dynamodb`)
 
-const deployedToAws = !!process.env.UP_STAGE
+const useAws = !!process.env.UP_STAGE
 
-const contextSpecificOptions = deployedToAws
+const contextSpecificOptions = useAws
 	? {}
 	: {
 		endpoint: `localhost:8000`,
