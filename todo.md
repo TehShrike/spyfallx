@@ -5,7 +5,6 @@
 
 # Shouldn't tell people about it without this
 
-- put application/json on request/response headers
 - The front page UI really sucks
 	- try having just the name input and the two buttons
 		- if they choose "join game" prompt them for the code

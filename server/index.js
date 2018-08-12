@@ -48,6 +48,11 @@ function startServer(port) {
 	app.use(koaBody())
 
 	app.use(async(context, next) => {
+		context.headers[`content-type`] = `application/json`
+		await next()
+	})
+
+	app.use(async(context, next) => {
 		try {
 			await next()
 		} catch (err) {
