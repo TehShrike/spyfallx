@@ -269,7 +269,7 @@ const getGameInformation = async(dynamoDb, gameId) => {
 		startTimestamp,
 	} = gameResponse
 
-	const playerNames = playerIds.length === 0
+	const playerIdsAndNames = playerIds.length === 0
 		? []
 		: await dynamoDb.batchGetItem({
 			RequestItems: {
@@ -281,21 +281,20 @@ const getGameInformation = async(dynamoDb, gameId) => {
 					})),
 					AttributesToGet: [
 						player.name.AttributeName,
+						player.id.AttributeName,
 					],
 				},
 			},
-		}).promise().then(data => data.Responses.player.map(item => getField(item, player.name)))
+		}).promise().then(data => data.Responses.player.map(item => ({
+			name: getField(item, player.name),
+			playerId: getField(item, player.id),
+		})))
 
-
-	const playersAndNames = combine({
-		playerId: playerIds,
-		name: playerNames,
-	})
 
 	if (!active) {
 		return {
 			gameActive: active,
-			playersInRoom: playersAndNames,
+			playersInRoom: playerIdsAndNames,
 		}
 	}
 
@@ -303,7 +302,7 @@ const getGameInformation = async(dynamoDb, gameId) => {
 
 	const activePlayerIdsSet = new Set(playerIds)
 
-	const playersInRoom = playersAndNames.map(player =>
+	const playersInRoom = playerIdsAndNames.map(player =>
 		Object.assign(player, {
 			active: activePlayerIdsSet.has(player.playerId),
 		})
