@@ -30,7 +30,7 @@
 
 <h3>Players</h3>
 <ul class="bordered">
-	{#each playersInRoom as player}
+	{#each deterministicallySortedPlayer as player}
 		<li
 			data-player-inactive={gameActive && !player.active}
 			data-first-player={firstPlayerId === player.playerId}
@@ -146,6 +146,15 @@ export default {
 				? `${ Math.floor(secondsLeft / 60) }:${ pad2(secondsLeft % 60) }`
 				: `0:00`
 		},
+		deterministicallySortedPlayer: ({ playersInRoom }) => playersInRoom.slice().sort(
+			(a, b) => {
+				if (a.active !== b.active) {
+					return a.active ? -1 : 1
+				} else {
+					return a.playerId < b.playerId ? -1 : 0
+				}
+			}
+		),
 	},
 }
 </script>
