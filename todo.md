@@ -1,8 +1,7 @@
 # game is broken without this
 
-- error messages for every failed response from the server
-	- working reasonably well on the game page, but not the index
-- In production, the names are jumping around like crazy.  Need to ignore the order in the response and sort deterministically
+- "active player" tracking doesn't currently make sense - need to track `activePlayerIds` separately from `playerIds`
+- When polling messages fail, display an error, but remove the error message when the next polling response comes in
 
 # Shouldn't tell people about it without this
 
@@ -31,9 +30,8 @@
 - add a robots.txt that blocks everything when deploying to staging
 	- add a `cp` command to the circle.yml file for the staging deploy
 - make the polling cheaper while the game is active
-	- use the game id + game start timestamp to poll a new endpoint that just returns whether or not that game is still active and has the same game start timestamp
-	- only start hitting the other two endpoints if it returns false
-	- once the game is active again, go back to polling the cheap endpoint
+	- include a "last deetz id" with every request
+	- server looks up the current "deetz id" and then only bothers looking up the rest of the data if there has been a change
 - disable the "start game" button when there are less than three players in the game
 - call [updateTimeToLive](https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB.html#updateTimeToLive-property) from the schema creation script
 
