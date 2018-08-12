@@ -217,7 +217,7 @@ const createPlayer = async dynamoDb => {
 	const secret = makeUuid()
 
 	const defaultPlayerName = generatePhonetic({
-		syllables: 2,
+		syllables: 3,
 		seed: playerId,
 	})
 
