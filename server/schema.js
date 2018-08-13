@@ -17,6 +17,7 @@ const player = {
 const game = {
 	id: field(`id`, TYPE.STRING),
 	playerIds: field(`playerIds`, TYPE.STRING_SET),
+	playerIdsAssignedRoles: field(`playerIdsAssignedRoles`, TYPE.STRING_SET),
 	roles: field(`roles`, TYPE.MAP),
 	active: field(`active`, TYPE.BOOLEAN),
 	locationSeed: field(`locationSeed`, TYPE.STRING),

@@ -262,6 +262,7 @@ const getGameInformation = async(dynamoDb, gameId) => {
 			game.active,
 			game.firstPlayerId,
 			game.startTimestamp,
+			game.playerIdsAssignedRoles,
 			game.changeCounter,
 		],
 	})
@@ -276,6 +277,7 @@ const getGameInformation = async(dynamoDb, gameId) => {
 		firstPlayerId,
 		startTimestamp,
 		changeCounter,
+		playerIdsAssignedRoles,
 	} = gameResponse
 
 	const playerIdsAndNames = playerIds.length === 0
@@ -299,6 +301,7 @@ const getGameInformation = async(dynamoDb, gameId) => {
 				item => ({
 					name: getField(item, player.name),
 					playerId: getField(item, player.id),
+					active: true,
 				})
 			).sort((a, b) => a.playerId < b.playerId ? -1 : 1)
 		)
@@ -314,7 +317,7 @@ const getGameInformation = async(dynamoDb, gameId) => {
 
 	const elapsedTimeMs = Date.now() - startTimestamp
 
-	const activePlayerIdsSet = new Set(playerIds)
+	const activePlayerIdsSet = new Set(playerIdsAssignedRoles)
 
 	const playersInRoom = playerIdsAndNames.map(player =>
 		Object.assign(player, {
@@ -416,9 +419,10 @@ const startGame = async(dynamoDb, gameId) => {
 			{ field: game.firstPlayerId, value: firstPlayerId },
 			{ field: game.startTimestamp, value: Date.now() },
 			{ field: game.roles, value: playerRoleMap },
+			{ field: game.playerIdsAssignedRoles, value: playerIds },
 			{ field: game.changeCounter, value: 1 },
 		],
-		expression: makeSetExpression(game.active, game.location, game.firstPlayerId, game.startTimestamp, game.roles)
+		expression: makeSetExpression(game.active, game.location, game.firstPlayerId, game.startTimestamp, game.roles, game.playerIdsAssignedRoles)
 			+ ` ` + makeSimpleExpression(`ADD`, game.changeCounter),
 	})
 
