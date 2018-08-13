@@ -24,6 +24,7 @@ const game = {
 	spySeed: field(`spySeed`, TYPE.STRING),
 	firstPlayerId: field(`firstPlayerId`, TYPE.STRING),
 	startTimestamp: field(`startTimestamp`, TYPE.STRING),
+	changeCounter: field(`changeCounter`, TYPE.NUMBER),
 	ttl: field(`ttl`, TYPE.NUMBER),
 }
 

@@ -27,6 +27,7 @@ const {
 	getPlayerGameInformation,
 	stopGame,
 	startGame,
+	getGameChangeCounter,
 } = require(`./game.js`)
 
 startServer(process.env.PORT || 8888)
@@ -38,6 +39,14 @@ const runWithDynamo = async fn => {
 const success = (context, body) => context.body = Object.assign({
 	success: true,
 }, body)
+
+const gameNotFound = context => {
+	context.status = 404
+	context.body = {
+		success: false,
+		message: `Game not found`,
+	}
+}
 
 function startServer(port) {
 	const app = new Koa()
@@ -81,19 +90,27 @@ function startServer(port) {
 					success(context, await getPlayerGameInformation(client, gameId, playerSecret))
 				})
 			},
-			'/api/game/:gameId': async context => {
-				const { gameId } = context.params
+			'/api/game/:gameId/:changeCounter(\\d+)': async context => {
+				const { gameId, changeCounter: changeCounterString } = context.params
+				const changeCounter = parseInt(changeCounterString, 10)
 
 				await runWithDynamo(async client => {
-					const game = await getGameInformation(client, gameId)
+					const currentChangeCounter = await getGameChangeCounter(dynamoDb, gameId)
 
-					if (game) {
-						success(context, game)
+					if (currentChangeCounter === null) {
+						gameNotFound(context)
+					} else if (currentChangeCounter === changeCounter) {
+						success(context, {
+							changed: false,
+						})
 					} else {
-						context.status = 404
-						context.body = {
-							success: false,
-							message: `Game not found`,
+						const game = await getGameInformation(client, gameId)
+						if (game) {
+							success(context, Object.assign(game, {
+								changed: true,
+							}))
+						} else {
+							gameNotFound(context)
 						}
 					}
 				})

@@ -118,34 +118,49 @@
 					playerSecret,
 				})
 
-				let lastElapsedTimeMs = null
+				let lastChangeCounter = 0
+				let requestInFlight = false
 
 				const loadGameState = async() => {
-					const [
-						{ role, location },
-						{ gameActive, playersInRoom, firstPlayerId, elapsedTimeMs },
-					] = await Promise.all([
-						handleError(futch(`/api/game/${ encodeURIComponent(gameId) }/player/${ playerSecret }`)),
-						handleError(futch(`/api/game/${ encodeURIComponent(gameId) }`)),
-					])
-
-					const locationObject = (gameActive && locationMap[location]) || null
-
-					if (!elapsedTimeMs || elapsedTimeMs < lastElapsedTimeMs) {
-						lastElapsedTimeMs = elapsedTimeMs
-						time.reset()
+					if (requestInFlight) {
+						return
 					}
 
-					elapsedTimeMs && time.update(elapsedTimeMs)
+					requestInFlight = true
 
-					view.set({
-						gameId,
-						role,
-						gameActive,
-						playersInRoom,
-						firstPlayerId,
-						location: locationObject,
-					})
+					try {
+						const gameResponse = await handleError(futch(`/api/game/${ encodeURIComponent(gameId) }/${ lastChangeCounter }`))
+
+						if (gameResponse.changed) {
+							const { gameActive, playersInRoom, firstPlayerId, elapsedTimeMs, changeCounter } = gameResponse
+							let locationObject = null
+							let role = null
+
+							lastChangeCounter = changeCounter
+
+							if (gameActive) {
+								time.update(elapsedTimeMs)
+
+								const secretPlayerObject = await handleError(futch(`/api/game/${ encodeURIComponent(gameId) }/player/${ playerSecret }`))
+
+								locationObject = locationMap[secretPlayerObject.location]
+								role = secretPlayerObject.role
+							} else {
+								time.reset()
+							}
+
+							view.set({
+								gameId,
+								role,
+								gameActive,
+								playersInRoom,
+								firstPlayerId,
+								location: locationObject,
+							})
+						}
+					} finally {
+						requestInFlight = false
+					}
 				}
 
 				try {

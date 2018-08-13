@@ -68,16 +68,34 @@ const buildUpdateWithValues = ({ table, key, fieldValues }) => ({
 	),
 })
 
-const updateItem = async(dynamoDb, { table, key, fieldValues }) => dynamoDb.updateItem(
-	Object.assign(
-		buildUpdateWithValues({ table, key, fieldValues }),
-		{
-			UpdateExpression: `SET ` + fieldValues.map(
-				({ field }) => `${ expressionNameName(field.AttributeName) } = ${ expressionValueName(field.AttributeName) }`
-			).join(`, `),
-		}
-	)
-).promise()
+const makeSimpleExpression = (operation, ...fields) => operation + fields.map(
+	field => expressionNameName(field.AttributeName) + ` ` + expressionValueName(field.AttributeName)
+).join(`, `)
+
+const makeSetExpression = (...fields) => `SET ` + fields.map(field => `${ expressionNameName(field.AttributeName) } = ${ expressionValueName(field.AttributeName) }`).join(`, `)
+
+const updateItem = async(dynamoDb, { table, key, fieldValues, expression }) => {
+	try {
+		return await dynamoDb.updateItem(
+			Object.assign(
+				buildUpdateWithValues({ table, key, fieldValues }),
+				{
+					UpdateExpression: expression,
+				}
+			)
+		).promise()
+	} catch (e) {
+		console.error(`Error ${ e.message }`, { table, key, fieldValues, expression })
+		throw e
+	}
+}
+
+const updateItemWithSet = async(dynamoDb, { table, key, fieldValues }) => updateItem(dynamoDb, {
+	table,
+	key,
+	fieldValues,
+	expression: makeSetExpression(...fieldValues.map(({ field }) => field)),
+})
 
 const getItem = async(dynamoDb, { tableName, key, resultFields }) => {
 	const data = await dynamoDb.getItem({
@@ -116,10 +134,13 @@ module.exports = {
 	putItem,
 	getItem,
 	updateItem,
+	updateItemWithSet,
 	buildUpdateWithValues,
 	expressionNameName,
 	expressionValueName,
 	serialize,
 	getField,
 	makeFieldObject,
+	makeSimpleExpression,
+	makeSetExpression,
 }

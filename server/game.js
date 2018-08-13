@@ -21,11 +21,11 @@ const {
 	putItem,
 	getItem,
 	updateItem,
-	buildUpdateWithValues,
-	expressionNameName,
-	expressionValueName,
+	updateItemWithSet,
 	serialize,
 	getField,
+	makeSimpleExpression,
+	makeSetExpression,
 } = require(`./dynamodb/helpers.js`)
 
 const SEED_NUMBER_SEPARATOR = ` `
@@ -99,7 +99,7 @@ const getRandomIndexUsingSeed = async(dynamoDb, { gameId, field, count }) => {
 	const index = die.roll() - 1
 	const newSeed = die.state.join(SEED_NUMBER_SEPARATOR)
 
-	updateItem(dynamoDb, {
+	updateItemWithSet(dynamoDb, {
 		table: `game`,
 		key: { field: game.id, value: gameId },
 		fieldValues: [{ field, value: newSeed }],
@@ -128,6 +128,7 @@ const createGame = async dynamoDb => {
 		fieldValues: [
 			{ field: game.id, value: gameId },
 			{ field: game.active, value: false },
+			{ field: game.changeCounter, value: 1 },
 		],
 	})
 
@@ -150,33 +151,27 @@ const addPlayerToGame = async(dynamoDb, gameId, secret) => {
 		throwKnownError(`Game id ${ gameId } does not exist`)
 	}
 
-	await dynamoDb.updateItem(
-		Object.assign(
-			buildUpdateWithValues({
-				table: `game`,
-				key: { field: game.id, value: gameId },
-				fieldValues: [{ field: game.playerIds, value: [ playerId ] }],
-			}),
-			{
-				UpdateExpression: `ADD ${ expressionNameName(game.playerIds.AttributeName) } ${ expressionValueName(game.playerIds.AttributeName) }`,
-			}
-		)
-	).promise()
+	await updateItem(dynamoDb, {
+		table: `game`,
+		key: { field: game.id, value: gameId },
+		fieldValues: [
+			{ field: game.playerIds, value: [ playerId ] },
+			{ field: game.changeCounter, value: 1 },
+		],
+		expression: makeSimpleExpression(`ADD`, game.playerIds, game.changeCounter),
+	})
 }
 
 const removePlayerFromGame = async(dynamoDb, gameId, playerId) => {
-	await dynamoDb.updateItem(
-		Object.assign(
-			buildUpdateWithValues({
-				table: `game`,
-				key: { field: game.id, value: gameId },
-				fieldValues: [{ field: game.playerIds, value: [ playerId ] }],
-			}),
-			{
-				UpdateExpression: `DELETE ${ expressionNameName(game.playerIds.AttributeName) } ${ expressionValueName(game.playerIds.AttributeName) }`,
-			}
-		)
-	).promise()
+	await updateItem(dynamoDb, {
+		table: `game`,
+		key: { field: game.id, value: gameId },
+		fieldValues: [
+			{ field: game.playerIds, value: [ playerId ] },
+			{ field: game.changeCounter, value: 1 },
+		],
+		expression: makeSimpleExpression(`DELETE`, game.playerIds) + ` ` + makeSimpleExpression(`ADD`, game.changeCounter),
+	})
 }
 
 const setPlayerNameWithPlayerSecret = async(dynamoDb, secret, name) => {
@@ -246,6 +241,18 @@ const createPlayer = async dynamoDb => {
 	}
 }
 
+const getGameChangeCounter = async(dynamoDb, gameId) => {
+	const gameResponse = await getItem(dynamoDb, {
+		tableName: `game`,
+		key: { field: game.id, value: gameId },
+		resultFields: [
+			game.changeCounter,
+		],
+	})
+
+	return gameResponse ? gameResponse.changeCounter : null
+}
+
 const getGameInformation = async(dynamoDb, gameId) => {
 	const gameResponse = await getItem(dynamoDb, {
 		tableName: `game`,
@@ -255,6 +262,7 @@ const getGameInformation = async(dynamoDb, gameId) => {
 			game.active,
 			game.firstPlayerId,
 			game.startTimestamp,
+			game.changeCounter,
 		],
 	})
 
@@ -267,6 +275,7 @@ const getGameInformation = async(dynamoDb, gameId) => {
 		active,
 		firstPlayerId,
 		startTimestamp,
+		changeCounter,
 	} = gameResponse
 
 	const playerIdsAndNames = playerIds.length === 0
@@ -285,16 +294,21 @@ const getGameInformation = async(dynamoDb, gameId) => {
 					],
 				},
 			},
-		}).promise().then(data => data.Responses.player.map(item => ({
-			name: getField(item, player.name),
-			playerId: getField(item, player.id),
-		})))
+		}).promise().then(
+			data => data.Responses.player.map(
+				item => ({
+					name: getField(item, player.name),
+					playerId: getField(item, player.id),
+				})
+			).sort((a, b) => a.playerId < b.playerId ? -1 : 1)
+		)
 
 
 	if (!active) {
 		return {
 			gameActive: active,
 			playersInRoom: playerIdsAndNames,
+			changeCounter,
 		}
 	}
 
@@ -313,6 +327,7 @@ const getGameInformation = async(dynamoDb, gameId) => {
 		playersInRoom,
 		firstPlayerId,
 		elapsedTimeMs,
+		changeCounter,
 	}
 }
 
@@ -346,9 +361,12 @@ const getPlayerGameInformation = async(dynamoDb, gameId, secret) => {
 const stopGame = async(dynamoDb, gameId) => updateItem(dynamoDb, {
 	table: `game`,
 	key: { field: game.id, value: gameId },
-	fieldValues: [{ field: game.active, value: false }],
+	fieldValues: [
+		{ field: game.active, value: false },
+		{ field: game.changeCounter, value: 1 },
+	],
+	expression: makeSetExpression(game.active) + ` ` + makeSimpleExpression(`ADD`, game.changeCounter),
 })
-
 
 const startGame = async(dynamoDb, gameId) => {
 	const [ playerIds, locationIndex ] = await Promise.all([
@@ -398,7 +416,10 @@ const startGame = async(dynamoDb, gameId) => {
 			{ field: game.firstPlayerId, value: firstPlayerId },
 			{ field: game.startTimestamp, value: Date.now() },
 			{ field: game.roles, value: playerRoleMap },
+			{ field: game.changeCounter, value: 1 },
 		],
+		expression: makeSetExpression(game.active, game.location, game.firstPlayerId, game.startTimestamp, game.roles)
+			+ ` ` + makeSimpleExpression(`ADD`, game.changeCounter),
 	})
 
 	return {
@@ -418,4 +439,5 @@ module.exports = {
 	getPlayerGameInformation,
 	stopGame,
 	startGame,
+	getGameChangeCounter,
 }
