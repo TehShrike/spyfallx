@@ -2,6 +2,7 @@
 
 - "active player" tracking doesn't currently make sense - need to track `activePlayerIds` separately from `playerIds`
 - When polling messages fail, display an error, but remove the error message when the next polling response comes in
+- When requests fail in general, maybe display a warning somewhere, but keep retrying, because autoscaling will probably eventually make it work
 
 # Shouldn't tell people about it without this
 
