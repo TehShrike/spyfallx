@@ -1,4 +1,4 @@
-const INTERVAL = 100
+const INTERVAL = 500
 
 export default cb => {
 	let lastUpdateTimestamp = Date.now()
