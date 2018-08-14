@@ -216,14 +216,18 @@
 			const setNameAndNavigateToGame = async({ gameId }) => {
 				const { playerSecret } = await playerDeetzPromise
 
-				console.log(`setting name to`, playerNameElement.value)
+				const playerNameValue = playerNameElement.value
 
-				localStorage.setItem(PLAYER_NAME_KEY, playerNameElement.value)
+				if (playerNameValue) {
+					console.log(`setting name to`, playerNameElement.value)
 
-				await postWithErrorHandling(`/api/set-name`, {
-					name: playerNameElement.value,
-					playerSecret,
-				})
+					localStorage.setItem(PLAYER_NAME_KEY, playerNameElement.value)
+
+					await postWithErrorHandling(`/api/set-name`, {
+						name: playerNameElement.value,
+						playerSecret,
+					})
+				}
 
 				document.location = `game.html?gameId=${ gameId.toLowerCase() }`
 			}
