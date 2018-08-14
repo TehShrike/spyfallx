@@ -118,10 +118,54 @@
 					playerSecret,
 				})
 
+				let lastTimestamp = null
 				let lastChangeCounter = 0
-				let requestInFlight = false
 
 				const loadGameState = async() => {
+					const gameResponse = await handleError(futch(`/api/game/${ encodeURIComponent(gameId) }/${ lastChangeCounter }`))
+
+					if (gameResponse.changed) {
+						const {
+							gameActive,
+							playersInRoom,
+							firstPlayerId,
+							elapsedTimeMs,
+							changeCounter,
+							startTimestamp,
+						} = gameResponse
+
+						let locationObject = null
+						let role = null
+
+						lastChangeCounter = changeCounter
+
+						if (lastTimestamp !== startTimestamp) {
+							time.reset()
+							lastTimestamp = startTimestamp
+						}
+
+						if (gameActive) {
+							time.update(elapsedTimeMs)
+
+							const secretPlayerObject = await handleError(futch(`/api/game/${ encodeURIComponent(gameId) }/player/${ playerSecret }`))
+
+							locationObject = locationMap[secretPlayerObject.location]
+							role = secretPlayerObject.role
+						}
+
+						view.set({
+							gameId,
+							role,
+							gameActive,
+							playersInRoom,
+							firstPlayerId,
+							location: locationObject,
+						})
+					}
+				}
+
+				let requestInFlight = false
+				const loadGameStateOnceAtATime = async() => {
 					if (requestInFlight) {
 						return
 					}
@@ -129,42 +173,14 @@
 					requestInFlight = true
 
 					try {
-						const gameResponse = await handleError(futch(`/api/game/${ encodeURIComponent(gameId) }/${ lastChangeCounter }`))
-
-						if (gameResponse.changed) {
-							const { gameActive, playersInRoom, firstPlayerId, elapsedTimeMs, changeCounter } = gameResponse
-							let locationObject = null
-							let role = null
-
-							lastChangeCounter = changeCounter
-
-							if (gameActive) {
-								time.update(elapsedTimeMs)
-
-								const secretPlayerObject = await handleError(futch(`/api/game/${ encodeURIComponent(gameId) }/player/${ playerSecret }`))
-
-								locationObject = locationMap[secretPlayerObject.location]
-								role = secretPlayerObject.role
-							} else {
-								time.reset()
-							}
-
-							view.set({
-								gameId,
-								role,
-								gameActive,
-								playersInRoom,
-								firstPlayerId,
-								location: locationObject,
-							})
-						}
+						await loadGameState()
 					} finally {
 						requestInFlight = false
 					}
 				}
 
 				try {
-					await loadGameState()
+					await loadGameStateOnceAtATime()
 				} catch (response) {
 					if (response.status === 404) {
 						errorMessageElement.innerText = `Invalid game id!`
@@ -185,7 +201,7 @@
 
 					time.reset()
 
-					await loadGameState()
+					await loadGameStateOnceAtATime()
 				})
 
 				view.on(`finish`, async() => {
@@ -194,7 +210,7 @@
 						playerSecret,
 					})
 
-					await loadGameState()
+					await loadGameStateOnceAtATime()
 				})
 
 				view.on(`leave`, async() => {
@@ -207,7 +223,7 @@
 
 				document.body.dataset.loading = false
 
-				setInterval(loadGameState, POLLING_INTERVAL)
+				setInterval(loadGameStateOnceAtATime, POLLING_INTERVAL)
 			}
 
 			init()

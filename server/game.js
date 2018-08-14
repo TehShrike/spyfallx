@@ -331,6 +331,7 @@ const getGameInformation = async(dynamoDb, gameId) => {
 		firstPlayerId,
 		elapsedTimeMs,
 		changeCounter,
+		startTimestamp,
 	}
 }
 

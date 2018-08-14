@@ -24,7 +24,7 @@ const game = {
 	location: field(`location`, TYPE.STRING),
 	spySeed: field(`spySeed`, TYPE.STRING),
 	firstPlayerId: field(`firstPlayerId`, TYPE.STRING),
-	startTimestamp: field(`startTimestamp`, TYPE.STRING),
+	startTimestamp: field(`startTimestamp`, TYPE.NUMBER),
 	changeCounter: field(`changeCounter`, TYPE.NUMBER),
 	ttl: field(`ttl`, TYPE.NUMBER),
 }
