@@ -1,16 +1,12 @@
 # game is broken without this
 
-- "active player" tracking doesn't currently make sense - need to track `activePlayerIds` separately from `playerIds`
+- If you hit "start game" without entering a name first, just start a new game and join it without a name
 - When polling messages fail, display an error, but remove the error message when the next polling response comes in
 - When requests fail in general, maybe display a warning somewhere, but keep retrying, because autoscaling will probably eventually make it work
+- Add a gray "back" button on the home page after the user hits "join"
 
 # Shouldn't tell people about it without this
 
-- The front page UI really sucks
-	- try having just the name input and the two buttons
-		- if they choose "join game" prompt them for the code
-		- if they choose "start game" prompt them for spyfall 1 vs 2
-	- title case the text in the buttons
 - affiliate link to Spyfall on Amazon
 - link to Patreon
 - "about" page
@@ -19,6 +15,7 @@
 	- link to Github
 	- link to Twitter
 - replace "leave game" with "back to home page"?
+- need focus indicator around buttons
 
 # project isn't finished without this
 
@@ -29,11 +26,10 @@
 	- the dark background as highlight around your role/location isn't great?
 - add a robots.txt that blocks everything when deploying to staging
 	- add a `cp` command to the circle.yml file for the staging deploy
-- make the polling cheaper while the game is active
-	- include a "last deetz id" with every request
-	- server looks up the current "deetz id" and then only bothers looking up the rest of the data if there has been a change
 - disable the "start game" button when there are less than three players in the game
-- call [updateTimeToLive](https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB.html#updateTimeToLive-property) from the schema creation script
+- polish the schema creation script
+	- [Enable autoscaling](https://github.com/Signiant/dynamodb-autoscale-enabler)
+	- call [updateTimeToLive](https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB.html#updateTimeToLive-property) from the schema creation script
 
 # would be nice to have
 
