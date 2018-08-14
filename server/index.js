@@ -187,7 +187,7 @@ function startServer(port) {
 					}
 				})
 			},
-			'/api/stop-game': async context => {
+			'/api/restart': async context => {
 				const { gameId, playerSecret } = context.request.body
 
 				await runWithDynamo(async client => {
@@ -195,10 +195,12 @@ function startServer(port) {
 
 					if (authed) {
 						await stopGame(client, gameId)
+						context.body = await startGame(client, gameId)
+						return
 					}
 
 					context.body = {
-						success: authed,
+						success: false,
 					}
 				})
 			},

@@ -12,7 +12,7 @@
 
 # project isn't finished without this
 
-- eliminate "end this game" and replace with "start a new game"?
+- game screen: make it difficult to accidentally double-click the "start game".  Fade in the "start a new game" button?
 - Ability to remove players
 - On the game screen, make "start game" appear/act disabled until there are 3+ players
 - maybe make the colors better

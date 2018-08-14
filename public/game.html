@@ -204,8 +204,8 @@
 					await loadGameStateOnceAtATime()
 				})
 
-				view.on(`finish`, async() => {
-					await postWithErrorHandling(`/api/stop-game`, {
+				view.on(`restart`, async() => {
+					await postWithErrorHandling(`/api/restart`, {
 						gameId,
 						playerSecret,
 					})
