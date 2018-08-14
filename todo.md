@@ -32,6 +32,7 @@
 - polish the schema creation script
 	- [Enable autoscaling](https://github.com/Signiant/dynamodb-autoscale-enabler)
 	- call [updateTimeToLive](https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB.html#updateTimeToLive-property) from the schema creation script
+- it's apparently possible to get Firefox (at least) to fire a bunch of setInterval callbacks right after each other if you kill focus on it for a while.  Need to add something to `loadGameStateOnceAtATime` to keep it from firing if it has fired in the last 500ms or something
 
 # would be nice to have
 
