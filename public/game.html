@@ -74,7 +74,7 @@
 				return o
 			}
 
-			const { gameId } = params()
+			const gameId = (params().gameId || ``).toLowerCase()
 			const time = smoothTime(elapsedTimeMs => {
 				view.set({
 					elapsedTimeMs,
