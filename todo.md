@@ -1,6 +1,5 @@
 # game is broken without this
 
-- Send `game.startTimestamp` back to the client.  In game.html, if that start timestamp is different than the last seen one, call `time.reset()`
 - On the home screen, if you hit "start game" without entering a name first, just start a new game and join it without a name
 - When polling messages fail, display an error, but remove the error message when the next polling response comes in
 - When requests fail in general, maybe display a warning somewhere, but keep retrying, because autoscaling will probably eventually make it work
@@ -19,6 +18,7 @@
 
 # project isn't finished without this
 
+- eliminate "end this game" and replace with "start a new game"?
 - Ability to remove players
 - On the game screen, make "start game" appear/act disabled until there are 3+ players
 - maybe make the colors better
