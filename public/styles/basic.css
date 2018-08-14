@@ -77,6 +77,11 @@ button {
 	overflow: visible;
 }
 
+button:focus {
+	-webkit-box-shadow: 0 0 0 0.2rem rgba(44, 62, 80, 0.25);
+	box-shadow: 0 0 0 0.2rem rgba(44, 62, 80, 0.25);
+}
+
 button:hover {
 	color: var(--white);
 	background-color: #1e2b37;

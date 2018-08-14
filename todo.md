@@ -3,7 +3,6 @@
 - If you hit "start game" without entering a name first, just start a new game and join it without a name
 - When polling messages fail, display an error, but remove the error message when the next polling response comes in
 - When requests fail in general, maybe display a warning somewhere, but keep retrying, because autoscaling will probably eventually make it work
-- Add a gray "back" button on the home page after the user hits "join"
 
 # Shouldn't tell people about it without this
 
