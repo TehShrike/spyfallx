@@ -280,7 +280,7 @@ const getGameInformation = async(dynamoDb, gameId) => {
 		playerIdsAssignedRoles,
 	} = gameResponse
 
-	const playerIdsAndNames = playerIds.length === 0
+	const playerIdsAndNames = (playerIds && playerIds.length === 0)
 		? []
 		: await dynamoDb.batchGetItem({
 			RequestItems: {
