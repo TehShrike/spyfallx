@@ -14,7 +14,7 @@
 
 - game screen: make it difficult to accidentally double-click the "start game".  Fade in the "start a new game" button?
 - Ability to remove players
-- On the game screen, make "start game" appear/act disabled until there are 3+ players
+- Need a visual style for disabled buttons
 - maybe make the colors better
 	- especially the dark blue background/hover colors on the primary buttons
 		- try making the non-hovered blue lighter
@@ -26,7 +26,7 @@
 - polish the schema creation script
 	- [Enable autoscaling](https://github.com/Signiant/dynamodb-autoscale-enabler)
 	- call [updateTimeToLive](https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB.html#updateTimeToLive-property) from the schema creation script
-- it's apparently possible to get Firefox (at least) to fire a bunch of setInterval callbacks right after each other if you kill focus on it for a while.  Need to add something to `loadGameStateOnceAtATime` to keep it from firing if it has fired in the last 500ms or something
+- it's apparently possible to get Firefox (at least) to fire a bunch of setInterval callbacks right after each other if you kill focus on it for a while.  Should add something to `loadGameStateOnceAtATime` to keep it from firing if it has fired in the last 500ms or something
 - When polling messages fail, display an error, but remove the error message when the next polling response comes in
 - When requests fail in general, maybe display a warning somewhere, but keep retrying, because autoscaling will probably eventually make it work
 
