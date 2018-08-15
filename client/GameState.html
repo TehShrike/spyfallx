@@ -23,8 +23,10 @@
 				You ask the first question!
 			</p>
 		{/if}
+	{:elseif playersInRoom.length < 3}
+		<h2>Waiting for {3 - playersInRoom.length} more players...</h2>
 	{:else}
-		<h2>Waiting for game to start...</h2>
+		<h2>Waiting for someone to start the game...</h2>
 	{/if}
 </div>
 
@@ -56,11 +58,11 @@
 
 <div class="buttons">
 	{#if gameActive}
-		<button type=button on:click="fire('restart')">
+		<button type=button on:click="fire('restart')" disabled={playersInRoom.length < 3}>
 			Start a new game
 		</button>
 	{:else}
-		<button type=button on:click="fire('start')">
+		<button type=button on:click="fire('start')" disabled={playersInRoom.length < 3}>
 			Start game
 		</button>
 	{/if}
