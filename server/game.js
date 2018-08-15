@@ -4,11 +4,14 @@ const reandom = require(`reandom`)
 const Die = require(`gamblers-dice`)
 const makeUuid = require(`just-uuid4`)
 const random = require(`random-int`)
-const generatePhonetic = require(`phonetic`).generate
+const generateSillyName = require(`sillyname`)
+const seedRandom = require(`seed-random`)
 
 const locations = require(`../shared/locations.js`)
 const makeShuffler = require(`./shuffler.js`)
 const throwKnownError = require(`./throw-known-error.js`)
+
+const generateSillyNameFromSeed = seed => generateSillyName(seedRandom(seed))
 
 const TABLES = require(`./schema.js`)
 const {
@@ -211,10 +214,7 @@ const createPlayer = async dynamoDb => {
 	const playerId = makeUuid()
 	const secret = makeUuid()
 
-	const defaultPlayerName = generatePhonetic({
-		syllables: 3,
-		seed: playerId,
-	})
+	const defaultPlayerName = generateSillyNameFromSeed(secret)
 
 	await Promise.all([
 		putItemAndIncreaseTtl(dynamoDb, {
