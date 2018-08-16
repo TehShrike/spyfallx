@@ -15,6 +15,8 @@
 - game screen: make it difficult to accidentally double-click the "start game".  Fade in the "start a new game" button?
 - Ability to remove players
 - Need a visual style for disabled buttons
+	- make the background color lighter
+	- make the text darker
 - maybe make the colors better
 	- especially the dark blue background/hover colors on the primary buttons
 		- try making the non-hovered blue lighter
