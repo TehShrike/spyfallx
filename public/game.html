@@ -49,6 +49,33 @@
 			[data-error=true] [data-when=error] {
 				display: block;
 			}
+
+			li {
+				flex-basis: calc(50% - 24px);
+				list-style-type: none;
+
+				background-color: var(--gray);
+				color: var(--white);
+
+				padding: 8px;
+				margin-bottom: 8px;
+			}
+
+			.bordered > li {
+				border: 2px solid var(--gray);
+				background-color: transparent;
+				color: var(--black);
+				border-radius: 0.25rem;
+			}
+
+			li[data-highlight=true] {
+				background-color: var(--deepCarrot);
+			}
+
+			.bordered > li[data-highlight=true] {
+				border-color: var(--deepCarrot);
+			}
+
 		</style>
 
 		<script type=module>

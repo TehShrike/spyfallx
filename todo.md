@@ -1,6 +1,5 @@
 # Shouldn't tell people about it without this
 
-- affiliate link to Spyfall on Amazon
 - link to Patreon
 - "about" page
 	- justification

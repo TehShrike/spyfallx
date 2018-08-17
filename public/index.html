@@ -60,11 +60,25 @@
 
 		</div>
 
-		<style>
-			[data-username-filled=false] #create-new-game {
-				disabled: true;
-			}
+		<div class="relevant-ad">
+			Your friends and family need good games.  Buy Spyfall for them:
+			<div class="buy-game-links">
+				<a href="https://www.amazon.com/gp/product/B00Y4TYRT8/ref=as_li_tl?ie=UTF8&tag=spyfallx-20&camp=1789&creative=9325&linkCode=as2&creativeASIN=B00Y4TYRT8&linkId=44ed4c0f1a58af355190bb47fe303e84">
+					<img src="images/spyfall.jpg" alt="Spyfall">
+					Spyfall
+				</a>
+				<a href="https://www.amazon.com/gp/product/B01MRVIURU/ref=as_li_tl?ie=UTF8&tag=spyfallx-20&camp=1789&creative=9325&linkCode=as2&creativeASIN=B01MRVIURU&linkId=2df99540d7c31ea39b76d1eeb3e9d057">
+					<img src="images/spyfall2.jpg" alt="Spyfall 2">
+					Spyfall 2
+				</a>
+				<a href="https://www.amazon.com/gp/product/B078HTBQYJ/ref=as_li_tl?ie=UTF8&tag=spyfallx-20&camp=1789&creative=9325&linkCode=as2&creativeASIN=B078HTBQYJ&linkId=d82c65a94d959b27ecb0fb4599fbde99">
+					<img src="images/dcspyfall.jpg" alt="DC Spyfall">
+					DC Spyfall
+				</a>
+			</div>
+		</div>
 
+		<style>
 			.form {
 				display: flex;
 				flex-direction: column;
@@ -126,6 +140,43 @@
 					margin-left: 0;
 					margin-right: 0;
 					width: 100%;
+				}
+			}
+
+			.relevant-ad {
+				margin-top: 32px;
+				color: var(--lightBlack);
+			}
+			.buy-game-links {
+				list-style: none;
+				margin-top: 8px;
+
+				display: flex;
+				flex-direction: row;
+				justify-content: space-evenly;
+			}
+			.buy-game-links img {
+				max-height: 120px;
+			}
+			.buy-game-links a {
+				display: flex;
+				flex-direction: column;
+				align-items: center;
+
+				margin: 8px;
+			}
+			@media (max-width: 500px) {
+				.buy-game-links img {
+					max-height: 100px;
+				}
+			}
+			@media (max-width: 350px) {
+				.buy-game-links {
+					flex-wrap: wrap;
+				}
+				.buy-game-links img {
+					max-height: 140px;
+					max-width: 90%;
 				}
 			}
 

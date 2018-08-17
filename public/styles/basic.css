@@ -89,7 +89,7 @@ button:hover {
 
 button.gray {
 	color: var(--black);
-	background-color: var(--light-gray);
+	background-color: var(--lightGray);
 }
 button.gray:hover {
 	color: var(--black);
@@ -103,34 +103,6 @@ ul, ol {
 	justify-content: space-between;
 	align-content: space-between;
 }
-
-li {
-	flex-basis: calc(50% - 24px);
-	list-style-type: none;
-
-	background-color: var(--gray);
-	color: var(--white);
-
-	padding: 8px;
-	margin-bottom: 8px;
-}
-
-.bordered > li {
-	border: 2px solid var(--gray);
-	background-color: transparent;
-	color: var(--black);
-	border-radius: 0.25rem;
-}
-
-li[data-highlight=true] {
-	background-color: var(--deepCarrot);
-}
-
-.bordered > li[data-highlight=true] {
-	border-color: var(--deepCarrot);
-}
-
-
 
 #error-message {
 	margin-top: 16px;
