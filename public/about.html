@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>
+			Spyfall X: About
+		</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<link rel="stylesheet" href="/styles/variables.css">
+
+		<link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-touch-icon.png">
+		<link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png">
+		<link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png">
+		<link rel="manifest" href="/icons/site.webmanifest">
+		<link rel="mask-icon" href="/icons/safari-pinned-tab.svg" color="#5bbad5">
+		<link rel="shortcut icon" href="/icons/favicon.ico">
+		<meta name="msapplication-TileColor" content="#ffc40d">
+		<meta name="msapplication-config" content="/icons/browserconfig.xml">
+		<meta name="theme-color" content="#ffffff">
+
+	</head>
+	<body>
+		<h1>About</h1>
+
+		<div>
+			<a href="/">Home</a>
+		</div>
+
+		<hr>
+
+		<p>
+			An implementation of the excellent game <a href="https://www.cryptozoic.com/spyfall">Spyfall</a>.
+		</p>
+
+		<p>
+			The code is publicly available <a href="https://github.com/TehShrike/spyfallx">on Github</a>.  To report a problem or view the to-do list, use the <a href="https://github.com/TehShrike/spyfallx/issues">issues page</a>.
+		</p>
+
+		<h2>
+			What's different
+		</h2>
+
+		<p>
+			The main change to this implementation is that it uses <a href="https://github.com/xori/gamblers-dice/#readme">"gambler's fallacy dice"</a> to pick the location and the spy.
+		</p>
+
+		<p>
+			This means that the more games you play without being a spy, the more likely you are to be the spy, and you are slightly less likely to be at locations you've played at recently.
+		</p>
+
+		<p>
+			You can still end up being the spy multiple times in a row, but it is less likely to happen than if the game used true random shuffling.  In other words, it works like people imagine random shuffling should work! 😂
+		</p>
+
+		<hr>
+
+		<h1>Rules</h1>
+
+		<p>
+			You are a group of secret agents and one spy.  The agents know what location they are at, but the spy does not.  The spy wins if they can figure out where they are.  The agents win if they figure out who is the spy.
+		</p>
+
+		<p>
+			Once everyone joins the game, someone hits "start game".
+		</p>
+
+		<p>
+			The game will tell you who is supposed to ask the first question.
+		</p>
+
+		<p>
+			That person asks anyone else a question.  You want to ask a question that will tell you whether or not the person knows where you are, so you can tell if they are a spy are not.  You can't ask questions (or give answers) that are too specific, or the spy will figure out where you are.
+		</p>
+
+		<p>
+			Once the person who was just asked a question answers it, they ask the next question of anyone else (except the person who just asked them a question).
+		</p>
+
+		<h2>How the game ends</h2>
+
+		<p>
+			At any point someone can call a vote accusing another player of being the spy.  If everyone agrees (or if a majority agrees, depending on how you want to roll), the game is over and the person reveals whether or not they were the spy.
+		</p>
+
+		<p>
+			If they correctly found the spy, the agents win.  If the agents fingered one of their own, the spy wins.
+		</p>
+
+		<p>
+			At any point, the spy may reveal themselves and guess the location.  If the spy guesses correctly, they win, otherwise, the agents win.
+		</p>
+
+		<p>
+			If you choose to play with the timer, then when the timer runs out, everyone may vote on who they think the spy is.
+		</p>
+
+		<p>
+			Read the official rules by Cryptozoic <a href="http://www.cryptozoic.com/sites/default/files/icme/u30695/spy_rules_eng_0.pdf">here (PDF)</a>.
+		</p>
+
+		<p>
+			Check out this video of cool folks playing Spyfall:
+		</p>
+
+		<p>
+			<iframe width="560" height="315" src="https://www.youtube-nocookie.com/embed/vV3KZzeUtIA" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+		</p>
+
+		<div class="footer">
+			<img src="images/duff.svg" alt="Duff logo">
+			<span>
+				This is a Josh Duff site.  If you'd like it to stick around and be maintained, <a href="https://www.patreon.com/TehShrike">support me on Patreon.</a>
+			</span>
+		</div>
+
+		<link rel="stylesheet" href="/styles/basic.css">
+	</body>
+</html>

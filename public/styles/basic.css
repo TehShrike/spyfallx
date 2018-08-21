@@ -50,14 +50,14 @@ input:focus {
 	background-color: var(--white);
 	border-color: #597ea2;
 	outline: 0;
-	-webkit-box-shadow: 0 0 0 0.2rem rgba(44, 62, 80, 0.25);
-	box-shadow: 0 0 0 0.2rem rgba(44, 62, 80, 0.25);
+	-webkit-box-shadow: 0 0 0 0.2rem var(--boxShadowColor);
+	box-shadow: 0 0 0 0.2rem var(--boxShadowColor);
 }
 
 
 button {
 	color: var(--white);
-	background-color: #2C3E50;
+	background-color: var(--reallyDarkNavy);
 
 	display: inline-block;
 	font-weight: 400;
@@ -75,16 +75,17 @@ button {
 	transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out, -webkit-box-shadow 0.15s ease-in-out;
 
 	overflow: visible;
+	cursor: pointer;
 }
 
 button:focus {
-	-webkit-box-shadow: 0 0 0 0.2rem rgba(44, 62, 80, 0.25);
-	box-shadow: 0 0 0 0.2rem rgba(44, 62, 80, 0.25);
+	-webkit-box-shadow: 0 0 0 0.2rem var(--boxShadowColor);
+	box-shadow: 0 0 0 0.2rem var(--boxShadowColor);
 }
 
 button:hover {
 	color: var(--white);
-	background-color: #1e2b37;
+	background-color: var(--reallyDarkNavyHover);
 }
 
 button.gray {
@@ -102,6 +103,13 @@ ul, ol {
 	flex-wrap: wrap;
 	justify-content: space-between;
 	align-content: space-between;
+}
+
+a:link {
+	color: var(--mediumBlue);
+}
+a:visited {
+	color: var(--blue);
 }
 
 #error-message {

@@ -1,10 +1,15 @@
 :root {
 	--black: #333;
 	--lightBlack: #646464;
+	--reallyDarkNavy: #2C3E50;
+	--reallyDarkNavyHover: #1e2b37;
+	--mediumBlue: #0076df;
 	--red: #DC143C;
 	--white: #fff;
 	--lightGray: #95a5a666;
 	--gray: #95a5a6;
 	--deepCarrot: #FF7F00;
 	--blue: #04819E;
+
+	--boxShadowColor: rgba(44, 62, 80, 0.25);
 };
