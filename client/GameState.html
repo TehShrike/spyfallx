@@ -57,14 +57,18 @@
 {/if}
 
 <div class="buttons">
-	{#if gameActive}
-		<button type=button on:click="fire('restart')" disabled={playersInRoom.length < 3}>
-			Start a new game
-		</button>
+	{#if playersInRoom.length >= 3}
+		{#if gameActive}
+			<button type=button on:click="fire('restart')">
+				Start a new game
+			</button>
+		{:else}
+			<button type=button on:click="fire('start')">
+				Start game
+			</button>
+		{/if}
 	{:else}
-		<button type=button on:click="fire('start')" disabled={playersInRoom.length < 3}>
-			Start game
-		</button>
+		<span>Waiting for {3 - playersInRoom.length} more</span>
 	{/if}
 
 	<button type=button on:click="fire('leave')" class="red">
@@ -118,6 +122,9 @@
 
 	.red {
 		background-color: var(--red);
+	}
+	button.red:hover {
+		background-color: var(--brightRed);
 	}
 </style>
 

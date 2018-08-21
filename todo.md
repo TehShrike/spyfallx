@@ -1,10 +1,5 @@
 # Shouldn't tell people about it without this
 
-- "about" page
-	- justification
-	- explanation of randomness
-	- link to Github
-	- link to Twitter
 - Ability to change your name
 	- an input/button at the top of the screen?  bottom?
 
@@ -12,14 +7,6 @@
 
 - game screen: make it difficult to accidentally double-click the "start game".  Fade in the "start a new game" button?
 - Ability to remove players
-- Need a visual style for disabled buttons
-	- make the background color lighter
-	- make the text darker
-- maybe make the colors better
-	- especially the dark blue background/hover colors on the primary buttons
-		- try making the non-hovered blue lighter
-	- the red button needs to get darker on hover
-	- the dark background as highlight around your role/location isn't great?
 - It's still possible to cause unexpected errors to be thrown by sending bad input to some endpoints
 - add a robots.txt that blocks everything when deploying to staging
 	- add a `cp` command to the circle.yml file for the staging deploy
