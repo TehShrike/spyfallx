@@ -1,6 +1,5 @@
 # Shouldn't tell people about it without this
 
-- link to Patreon
 - "about" page
 	- justification
 	- explanation of randomness

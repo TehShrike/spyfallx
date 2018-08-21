@@ -111,3 +111,13 @@ ul, ol {
 	font-weight: bold;
 }
 
+.footer {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	margin-top: 32px;
+}
+.footer img {
+	margin-right: 16px;
+	height: 2em;
+}
