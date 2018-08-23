@@ -37,6 +37,8 @@
 			data-player-inactive={gameActive && !player.active}
 			data-first-player={firstPlayerId === player.playerId}
 			data-current-player={player.playerId === playerId}
+			data-crossed-off={playerIsCrossedOff(player.playerId)}
+			on:click=togglePlayer(player.playerId)
 		>
 			{player.name}
 		</li>
@@ -81,6 +83,8 @@
 	{#each locationNames as locationName}
 		<li
 			data-current-location={location && locationName === location.name}
+			data-crossed-off={locationIsCrossedOff(locationName)}
+			on:click=toggleLocation(locationName)
 		>
 			{locationName}
 		</li>
@@ -126,6 +130,10 @@
 	button.red:hover {
 		background-color: var(--brightRed);
 	}
+
+	[data-crossed-off=true] {
+		text-decoration-line: line-through;
+	}
 </style>
 
 <script>
@@ -145,6 +153,8 @@ export default {
 			playerId: null,
 			firstPlayerId: null,
 			elapsedTimeMs: null,
+			crossedOffPlayers: {},
+			crossedOffLocations: {},
 		}
 	},
 	computed: {
@@ -164,6 +174,33 @@ export default {
 				}
 			}
 		),
+		playerIsCrossedOff: ({ crossedOffPlayers }) =>
+			playerId => crossedOffPlayers[playerId] === undefined
+				? false
+				: crossedOffPlayers[playerId],
+		locationIsCrossedOff: ({ crossedOffLocations }) =>
+			locationName => crossedOffLocations[locationName] === undefined
+				? false
+				: crossedOffLocations[locationName],
+	},
+	methods: {
+		togglePlayer(playerId) {
+			const { crossedOffPlayers, playerIsCrossedOff } = this.get()
+
+			this.set({
+				crossedOffPlayers: Object.assign(crossedOffPlayers, {
+					[playerId]: !playerIsCrossedOff(playerId),
+				}),
+			})
+		},
+		toggleLocation(locationName) {
+			const { crossedOffLocations, locationIsCrossedOff } = this.get()
+			this.set({
+				crossedOffLocations: Object.assign(crossedOffLocations, {
+					[locationName]: !locationIsCrossedOff(locationName),
+				}),
+			})
+		},
 	},
 }
 </script>
