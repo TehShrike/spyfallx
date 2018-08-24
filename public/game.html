@@ -178,6 +178,14 @@
 						if (lastTimestamp !== startTimestamp) {
 							time.reset()
 							lastTimestamp = startTimestamp
+
+							view.set({
+								crossedOffPlayers: {},
+								crossedOffLocations: {},
+								activeGameStartTimestamp: startTimestamp,
+							})
+
+							view.load()
 						}
 
 						if (gameActive) {
@@ -196,6 +204,7 @@
 							playersInRoom,
 							firstPlayerId,
 							location: locationObject,
+							activeGameStartTimestamp: startTimestamp,
 						})
 					}
 				}
