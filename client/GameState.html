@@ -37,6 +37,8 @@
 			data-player-inactive={gameActive && !player.active}
 			data-first-player={firstPlayerId === player.playerId}
 			data-current-player={player.playerId === playerId}
+			data-crossed-off={playerIsCrossedOff(player.playerId)}
+			on:click=togglePlayer(player.playerId)
 		>
 			{player.name}
 		</li>
@@ -81,6 +83,8 @@
 	{#each locationNames as locationName}
 		<li
 			data-current-location={location && locationName === location.name}
+			data-crossed-off={locationIsCrossedOff(locationName)}
+			on:click=toggleLocation(locationName)
 		>
 			{locationName}
 		</li>
@@ -126,12 +130,37 @@
 	button.red:hover {
 		background-color: var(--brightRed);
 	}
+
+	[data-crossed-off=true] {
+		text-decoration-line: line-through;
+		background-color: var(--lightGray);
+	}
 </style>
 
 <script>
 const GAME_LENGTH_MS = 1000 * 60 * 8
 
 const pad2 = number => number < 10 ? `0${ number }` : number
+
+const LS_LAST_SEEN_GAME_START = `spyfallx_last_seen_game_start_timestamp`
+const LS_CROSSED_OFF_PLAYERS_KEY = `spyfallx_crossed_off_players`
+const LS_CROSSED_OFF_LOCATIONS_KEY = `spyfallx_crossed_off_locations`
+
+const getLastGameStart = () => {
+	const string = localStorage.getItem(LS_LAST_SEEN_GAME_START)
+
+	if (!string) {
+		return null
+	}
+
+	try {
+		const number = parseInt(string, 10)
+		return Number.isNaN(number) ? null : number
+	} catch (e) {
+		console.error(e)
+		return null
+	}
+}
 
 export default {
 	data() {
@@ -145,6 +174,9 @@ export default {
 			playerId: null,
 			firstPlayerId: null,
 			elapsedTimeMs: null,
+			crossedOffPlayers: {},
+			crossedOffLocations: {},
+			activeGameStartTimestamp: null,
 		}
 	},
 	computed: {
@@ -164,6 +196,70 @@ export default {
 				}
 			}
 		),
+		playerIsCrossedOff: ({ crossedOffPlayers }) =>
+			playerId => crossedOffPlayers[playerId] === undefined
+				? false
+				: crossedOffPlayers[playerId],
+		locationIsCrossedOff: ({ crossedOffLocations }) =>
+			locationName => crossedOffLocations[locationName] === undefined
+				? false
+				: crossedOffLocations[locationName],
+	},
+	methods: {
+		togglePlayer(playerId) {
+			const { crossedOffPlayers, playerIsCrossedOff } = this.get()
+
+			this.set({
+				crossedOffPlayers: Object.assign(crossedOffPlayers, {
+					[playerId]: !playerIsCrossedOff(playerId),
+				}),
+			})
+
+			this.save(LS_CROSSED_OFF_PLAYERS_KEY, `crossedOffPlayers`)
+		},
+		toggleLocation(locationName) {
+			const { crossedOffLocations, locationIsCrossedOff } = this.get()
+			this.set({
+				crossedOffLocations: Object.assign(crossedOffLocations, {
+					[locationName]: !locationIsCrossedOff(locationName),
+				}),
+			})
+
+			this.save(LS_CROSSED_OFF_LOCATIONS_KEY, `crossedOffLocations`)
+		},
+		load() {
+			this.loadSpecificProperty(LS_CROSSED_OFF_LOCATIONS_KEY, `crossedOffLocations`)
+			this.loadSpecificProperty(LS_CROSSED_OFF_PLAYERS_KEY, `crossedOffPlayers`)
+		},
+		loadSpecificProperty(localStorageKey, svelteProperty) {
+			const { activeGameStartTimestamp } = this.get()
+
+
+			if (activeGameStartTimestamp !== getLastGameStart()) {
+				return
+			}
+
+			try {
+				const string = localStorage.getItem(localStorageKey)
+				if (string) {
+					const data = JSON.parse(string)
+					this.set({
+						[svelteProperty]: data,
+					})
+				}
+			} catch (e) {
+				console.error(e)
+			}
+		},
+		save(localStorageKey, svelteProperty) {
+			const {
+				[svelteProperty]: data,
+				activeGameStartTimestamp,
+			} = this.get()
+
+			localStorage.setItem(localStorageKey, JSON.stringify(data))
+			localStorage.setItem(LS_LAST_SEEN_GAME_START, activeGameStartTimestamp)
+		},
 	},
 }
 </script>
