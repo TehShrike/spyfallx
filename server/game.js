@@ -165,6 +165,17 @@ const addPlayerToGame = async(dynamoDb, gameId, secret) => {
 	})
 }
 
+const incrementGameChangeCounter = async(dynamoDb, gameId) => {
+	await updateItem(dynamoDb, {
+		table: `game`,
+		key: { field: game.id, value: gameId },
+		fieldValues: [
+			{ field: game.changeCounter, value: 1 },
+		],
+		expression: makeSimpleExpression(`ADD`, game.changeCounter),
+	})
+}
+
 const removePlayerFromGame = async(dynamoDb, gameId, playerId) => {
 	await updateItem(dynamoDb, {
 		table: `game`,
@@ -445,4 +456,5 @@ module.exports = {
 	stopGame,
 	startGame,
 	getGameChangeCounter,
+	incrementGameChangeCounter,
 }

@@ -17,6 +17,10 @@ body {
 	text-align: center;
 }
 
+h1, h2 {
+	margin-top: 8px;
+	margin-bottom: 8px;
+}
 
 
 input {

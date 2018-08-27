@@ -28,10 +28,6 @@
 		</div>
 
 		<div data-when=done-loading>
-			<h1>Spyfall X</h1>
-
-			<hr>
-
 			<div id="game-state-target"></div>
 		</div>
 
@@ -115,17 +111,15 @@
 				return o
 			}
 
+			const view = new GameState({
+				target: document.getElementById(`game-state-target`),
+			})
+
 			const gameId = (params().gameId || ``).toLowerCase()
 			const time = smoothTime(elapsedTimeMs => {
 				view.set({
 					elapsedTimeMs,
 				})
-			})
-
-			const view = new GameState({
-				target: document.getElementById(`game-state-target`),
-				data: {
-				},
 			})
 
 			const postWithErrorHandling = (...args) => handleError(post(...args))
@@ -263,12 +257,23 @@
 					document.location = `./`
 				})
 
+				view.on(`change name`, async name => {
+					console.log(`changing to`, name)
+					await postWithErrorHandling(`/api/set-name`, {
+						name,
+						playerSecret,
+						gameId,
+					})
+
+					await loadGameStateOnceAtATime()
+				})
+
 				document.body.dataset.loading = false
 
 				setInterval(loadGameStateOnceAtATime, POLLING_INTERVAL)
 			}
 
-			init()
+			window.addEventListener(`pageshow`, init)
 
 
 		</script>

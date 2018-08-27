@@ -1,14 +1,15 @@
 :root {
 	--black: #333;
 	--lightBlack: #646464;
+	--gray: #95a5a6;
+	--lightGray: #95a5a666;
+	--lighterGray: #95a5a64f;
+	--white: #fff;
 	--reallyDarkNavy: #2C3E50;
 	--reallyDarkNavyHover: #42586D;
 	--mediumBlue: #0076df;
 	--red: #C61700;
 	--brightRed: #FF1E00;
-	--white: #fff;
-	--lightGray: #95a5a666;
-	--gray: #95a5a6;
 	--deepCarrot: #FF7F00;
 	--blue: #04819E;
 

@@ -28,6 +28,7 @@ const {
 	stopGame,
 	startGame,
 	getGameChangeCounter,
+	incrementGameChangeCounter,
 } = require(`./game.js`)
 
 startServer(process.env.PORT || 8888)
@@ -136,10 +137,14 @@ function startServer(port) {
 		},
 		POST: {
 			'/api/set-name': async context => {
-				const { name, playerSecret } = context.request.body
+				const { name, playerSecret, gameId } = context.request.body
 
 				await runWithDynamo(async client => {
 					await setPlayerNameWithPlayerSecret(client, playerSecret, name)
+
+					if (gameId) {
+						await incrementGameChangeCounter(client, gameId)
+					}
 
 					success(context)
 				})

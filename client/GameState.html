@@ -1,7 +1,53 @@
-<div class="center">
-	<p>
+<div class="heading">
+	<h1>Spyfall X</h1>
+	<div>
 		Game code: <strong class="emphasize uppercase">{gameId}</strong>
-	</p>
+	</div>
+</div>
+
+<hr>
+
+<div class=center>
+	{#if playerName}
+		<p class=player-name>
+			{#if changingName}
+				<form style="width: 100%;" class="player-name" on:submit="submitNameChange(event)">
+					<input
+						ref:playerNameInput
+						type="text"
+						bind:value=customPlayerName
+					>
+					<button
+						type=submit
+					>
+						change
+					</button>
+
+				</form>
+
+			{:else}
+				<strong>You are
+					<span
+						class="emphasize nobreak"
+						data-up-to-date={!customPlayerName || customPlayerName === playerName}
+					>
+						{playerName}
+					</span>
+				</strong>
+
+				{#if !customPlayerName || customPlayerName === playerName}
+					<button
+						type=button
+						class="small-button gray-button"
+						on:click="startChangingName()"
+					>
+						change...
+					</button>
+				{/if}
+			{/if}
+		</p>
+	{/if}
+
 
 	{#if gameActive}
 		<strong>{elapsed}</strong>
@@ -104,10 +150,28 @@
 		font-size: 0.9em;
 	}
 
+	.heading {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		flex-wrap: wrap;
+	}
+
+	.player-name {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		flex-wrap: wrap;
+	}
+	.player-name button {
+		margin: 4px 8px;
+	}
+
 	.buttons {
 		display: flex;
 		flex-direction: row;
 		justify-content: space-between;
+		flex-wrap: wrap;
 	}
 
 	.emphasize {
@@ -125,9 +189,29 @@
 		background-color: var(--brightRed);
 	}
 
+	.small-button {
+		padding: 4px 8px;
+		line-height: 0.9;
+	}
+	.gray-button {
+		background-color: var(--lightGray);
+		color: var(--gray);
+	}
+	.gray-button:hover {
+		background-color: var(--lighterGray);
+	}
+
 	[data-crossed-off=true] {
 		text-decoration-line: line-through;
 		background-color: var(--lightGray);
+	}
+
+	[data-up-to-date=false] {
+		color: var(--gray);
+	}
+
+	.nobreak {
+		white-space: nowrap;
 	}
 </style>
 
@@ -171,6 +255,7 @@ export default {
 			crossedOffPlayers: {},
 			crossedOffLocations: {},
 			activeGameStartTimestamp: null,
+			changingName: false,
 		}
 	},
 	computed: {
@@ -198,8 +283,32 @@ export default {
 			locationName => crossedOffLocations[locationName] === undefined
 				? false
 				: crossedOffLocations[locationName],
+		playerName: ({ playerId, playersInRoom }) => {
+			const you = playersInRoom.find(
+				({ playerId: possiblePlayerId }) => possiblePlayerId === playerId
+			)
+
+			return you ? you.name : null
+		},
 	},
 	methods: {
+		startChangingName() {
+			const playerName = this.get().playerName
+			this.set({
+				customPlayerName: playerName,
+				changingName: true,
+			})
+
+			this.refs.playerNameInput.setSelectionRange(0, playerName.length, `forward`)
+			this.refs.playerNameInput.focus()
+		},
+		submitNameChange(event) {
+			event.preventDefault()
+			this.fire(`change name`, this.get().customPlayerName)
+			this.set({
+				changingName: false,
+			})
+		},
 		togglePlayer(playerId) {
 			const { crossedOffPlayers, playerIsCrossedOff } = this.get()
 
