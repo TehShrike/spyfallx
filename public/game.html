@@ -130,7 +130,14 @@
 
 			const postWithErrorHandling = (...args) => handleError(post(...args))
 
+			let loaded = false
+
 			const init = async() => {
+				if (loaded) {
+					return
+				}
+				loaded = true
+
 				const { playerId, playerSecret } = await handleError(getPlayerDeetz())
 
 				view.set({
@@ -248,7 +255,7 @@
 				})
 
 				view.on(`leave`, async() => {
-					await postWithErrorHandling(`/api/remove-from-game`, {
+					await post(`/api/remove-from-game`, {
 						gameId,
 						playerId,
 					})
