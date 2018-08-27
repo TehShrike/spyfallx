@@ -215,6 +215,7 @@
 
 					try {
 						await loadGameState()
+						document.body.dataset.error = false
 					} finally {
 						requestInFlight = false
 					}
