@@ -214,6 +214,9 @@
 			import { post } from './futch.js'
 			import { PLAYER_NAME_KEY } from './constants.js'
 			import getPlayerDeetz from './get-player-deetz.js'
+			import makeErrorHandler from './handle-error.js'
+
+			const handleError = makeErrorHandler(document.getElementById(`error-message`))
 
 			const body = document.body
 
@@ -225,20 +228,6 @@
 
 			const playerNameElement = document.getElementById(NAME_INPUT_ID)
 
-			const handleError = async promise => {
-				try {
-					return await promise
-				} catch (err) {
-					console.log(err)
-					err.json().then(responseBody => {
-						document.getElementById(`error-message`).innerText = responseBody.message || responseBody
-					})
-
-					body.dataset.error = true
-
-					throw err
-				}
-			}
 			const postWithErrorHandling = (...args) => handleError(post(...args))
 
 			const on = (id, event, fn) => {

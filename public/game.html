@@ -91,11 +91,12 @@
 			import smoothTime from './time-smoother.js'
 			import { futch, post } from './futch.js'
 			import getPlayerDeetz from './get-player-deetz.js'
+			import makeErrorHandler from './handle-error.js'
 
 			import GameState from './build/game-state.js'
 			import locationMap from './build/locations.js'
 
-			const errorMessageElement = document.getElementById(`error-message`)
+			const handleError = makeErrorHandler(document.getElementById(`error-message`))
 
 			const POLLING_INTERVAL = 1000
 
@@ -122,22 +123,6 @@
 				data: {
 				},
 			})
-
-			const handleError = async promise => {
-				try {
-					return await promise
-				} catch (err) {
-					err.json().then(body => {
-						if (body.message) {
-							errorMessageElement.innerText = body.message
-						}
-					})
-
-					document.body.dataset.error = true
-
-					throw err
-				}
-			}
 
 			const postWithErrorHandling = (...args) => handleError(post(...args))
 
