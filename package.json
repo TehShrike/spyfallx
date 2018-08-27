@@ -9,7 +9,8 @@
     "dynamodb": "java -Djava.library.path=~/dynamodb_local_latest/DynamoDBLocal_lib -jar ~/dynamodb_local_latest/DynamoDBLocal.jar -sharedDb",
     "create-schema": "node create-schema.js",
     "dev": "nodemon ./server/index.js",
-    "start": "node server/index.js"
+    "start": "node server/index.js",
+    "watch-svelte": "watch \"npm run build\" client"
   },
   "keywords": [
     "spyfall"
@@ -41,6 +42,7 @@
     "zora": "2.0.1"
   },
   "devDependencies": {
-    "nodemon": "1.17.5"
+    "nodemon": "1.17.5",
+    "watch": "1.0.2"
   }
 }
