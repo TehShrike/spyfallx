@@ -1,8 +1,3 @@
-# Shouldn't tell people about it without this
-
-- Ability to change your name
-	- an input/button at the top of the screen?  bottom?
-
 # project isn't finished without this
 
 - game screen: make it difficult to accidentally double-click the "start game".  Fade in the "start a new game" button?
