@@ -213,7 +213,7 @@
 					await loadGameStateOnceAtATime()
 				} catch (response) {
 					if (response.status === 404) {
-						errorMessageElement.innerText = `Invalid game id!`
+						document.getElementById(`error-message`).innerText = `Invalid game id!`
 						document.body.dataset.loading = false
 					} else {
 						handleError(Promise.reject(response))
