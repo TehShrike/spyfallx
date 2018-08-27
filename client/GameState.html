@@ -1,6 +1,4 @@
 <div class="center">
-	<h1>Spyfall X</h1>
-
 	<p>
 		Game code: <strong class="emphasize uppercase">{gameId}</strong>
 	</p>
@@ -23,10 +21,6 @@
 				You ask the first question!
 			</p>
 		{/if}
-	{:elseif playersInRoom.length < 3}
-		<h2>Waiting for {3 - playersInRoom.length} more players...</h2>
-	{:else}
-		<h2>Waiting for someone to start the game...</h2>
 	{/if}
 </div>
 
@@ -70,7 +64,7 @@
 			</button>
 		{/if}
 	{:else}
-		<span>Waiting for {3 - playersInRoom.length} more</span>
+		<span>Waiting for {3 - playersInRoom.length} more players...</span>
 	{/if}
 
 	<button type=button on:click="fire('leave')" class="red">
