@@ -5,12 +5,12 @@
   "main": "index.js",
   "scripts": {
     "test": "glob-module-file --pattern=\"+(server|shared)/**/*.test.js\" --format=cjs | node",
-    "build": "node build-location-map.js && svelte compile client/GameState.html --format=es --output=public/build/game-state.js",
+    "build": "node build-location-map.js && svelte compile component/GameState.html --format=es --output=public/build/game-state.js",
     "dynamodb": "java -Djava.library.path=~/dynamodb_local_latest/DynamoDBLocal_lib -jar ~/dynamodb_local_latest/DynamoDBLocal.jar -sharedDb",
     "create-schema": "node create-schema.js",
     "dev": "nodemon ./server/index.js",
     "start": "node server/index.js",
-    "watch-svelte": "watch \"npm run build\" client"
+    "watch-svelte": "watch \"npm run build\" component"
   },
   "keywords": [
     "spyfall"
