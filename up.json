@@ -5,16 +5,21 @@
 	"stages": {
 		"staging": {
 			"domain": "staging.spyfallx.com",
-			"zone": false
+			"zone": false,
+			"lambda": {
+				"warm": false
+			}
 		},
 		"production": {
 			"domain": "spyfallx.com",
-			"zone": false
+			"zone": false,
+			"lambda": {
+				"warm": true,
+				"warm_count": 5
+			}
 		}
 	},
 	"lambda": {
-		"warm": true,
-		"warm_count": 10,
 		"policy": [{
 			"Effect": "Allow",
 			"Resource": "*",
