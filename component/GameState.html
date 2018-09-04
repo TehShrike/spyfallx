@@ -72,10 +72,11 @@
 
 <h3>Players</h3>
 <ul class="bordered">
-	{#each deterministicallySortedPlayer as player}
+	{#each deterministicallySortedPlayers as player}
 		<li
 			data-player-inactive={gameActive && !player.active}
 			data-first-player={firstPlayerId === player.playerId}
+			data-may-start={playerWhoMayHitStart.playerId === player.playerId}
 			data-current-player={player.playerId === playerId}
 			data-crossed-off={playerIsCrossedOff(player.playerId)}
 			on:click=togglePlayer(player.playerId)
@@ -100,14 +101,28 @@
 
 <div class="buttons">
 	{#if playersInRoom.length >= 3}
-		{#if gameActive}
-			<button type=button on:click="fire('restart')">
-				Start a new game
-			</button>
+		{#if playerWhoMayHitStart.playerId === playerId}
+			{#if gameActive}
+				<button
+					type=button
+					on:click="start('restart')"
+					disabled={timestampWhenStartWasPressed === activeGameStartTimestamp}
+				>
+					Start a new game
+				</button>
+			{:else}
+				<button
+					type=button
+					on:click="start('start')"
+					disabled={timestampWhenStartWasPressed === activeGameStartTimestamp}
+				>
+					Start game
+				</button>
+			{/if}
+		{:elseif !gameActive}
+			<span>Waiting for {playerWhoMayHitStart.name} to start the game...</span>
 		{:else}
-			<button type=button on:click="fire('start')">
-				Start game
-			</button>
+			<span>{playerWhoMayHitStart.name} may start the next game</span>
 		{/if}
 	{:else}
 		<span>Waiting for {3 - playersInRoom.length} more players...</span>
@@ -149,6 +164,11 @@
 		color: var(--blue);
 		font-size: 0.9em;
 	}
+	[data-may-start=true]::after {
+		content: ' (starter)';
+		color: var(--blue);
+		font-size: 0.9em;
+	}
 
 	.heading {
 		display: flex;
@@ -172,6 +192,13 @@
 		flex-direction: row;
 		justify-content: space-between;
 		flex-wrap: wrap;
+		align-items: center;
+	}
+
+	.buttons button[disabled] {
+		color: var(--lighterGray);
+		background-color: var(--gray);
+		cursor: not-allowed;
 	}
 
 	.emphasize {
@@ -255,6 +282,7 @@ export default {
 			crossedOffPlayers: {},
 			crossedOffLocations: {},
 			activeGameStartTimestamp: null,
+			timestampWhenStartWasPressed: null,
 			changingName: false,
 		}
 	},
@@ -266,7 +294,7 @@ export default {
 				? `${ Math.floor(secondsLeft / 60) }:${ pad2(secondsLeft % 60) }`
 				: `0:00`
 		},
-		deterministicallySortedPlayer: ({ playersInRoom }) => playersInRoom.slice().sort(
+		deterministicallySortedPlayers: ({ playersInRoom }) => playersInRoom.slice().sort(
 			(a, b) => {
 				if (a.active !== b.active) {
 					return a.active ? -1 : 1
@@ -275,6 +303,13 @@ export default {
 				}
 			}
 		),
+		playerWhoMayHitStart: ({ creatorPlayerId, deterministicallySortedPlayers }) => {
+			const player = deterministicallySortedPlayers.find(
+				({ playerId }) => playerId === creatorPlayerId
+			) || deterministicallySortedPlayers[0]
+
+			return player
+		},
 		playerIsCrossedOff: ({ crossedOffPlayers }) =>
 			playerId => crossedOffPlayers[playerId] === undefined
 				? false
@@ -362,6 +397,12 @@ export default {
 
 			localStorage.setItem(localStorageKey, JSON.stringify(data))
 			localStorage.setItem(LS_LAST_SEEN_GAME_START, activeGameStartTimestamp)
+		},
+		start(startString) {
+			this.set({
+				timestampWhenStartWasPressed: this.get().activeGameStartTimestamp
+			})
+			this.fire(startString)
 		},
 	},
 }

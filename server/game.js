@@ -123,7 +123,8 @@ const getRandomIndexUsingSeed = async(dynamoDb, { gameId, field, count }) => {
 
 
 
-const createGame = async dynamoDb => {
+const createGame = async (dynamoDb, secret) => {
+	const creatorPlayerId = await getPlayerIdOrThrow(dynamoDb, secret)
 	const gameId = generateGameId()
 
 	await putItemAndIncreaseTtl(dynamoDb, {
@@ -132,6 +133,7 @@ const createGame = async dynamoDb => {
 			{ field: game.id, value: gameId },
 			{ field: game.active, value: false },
 			{ field: game.changeCounter, value: 1 },
+			{ field: game.creatorPlayerId, value: creatorPlayerId }
 		],
 	})
 
@@ -275,6 +277,7 @@ const getGameInformation = async(dynamoDb, gameId) => {
 			game.startTimestamp,
 			game.playerIdsAssignedRoles,
 			game.changeCounter,
+			game.creatorPlayerId,
 		],
 	})
 
@@ -289,6 +292,7 @@ const getGameInformation = async(dynamoDb, gameId) => {
 		startTimestamp,
 		changeCounter,
 		playerIdsAssignedRoles,
+		creatorPlayerId,
 	} = gameResponse
 
 	const playerIdsAndNames = (playerIds && playerIds.length === 0)
@@ -323,6 +327,7 @@ const getGameInformation = async(dynamoDb, gameId) => {
 			gameActive: active,
 			playersInRoom: playerIdsAndNames,
 			changeCounter,
+			creatorPlayerId,
 		}
 	}
 
@@ -339,9 +344,10 @@ const getGameInformation = async(dynamoDb, gameId) => {
 	return {
 		gameActive: active,
 		playersInRoom,
+		changeCounter,
+		creatorPlayerId,
 		firstPlayerId,
 		elapsedTimeMs,
-		changeCounter,
 		startTimestamp,
 	}
 }

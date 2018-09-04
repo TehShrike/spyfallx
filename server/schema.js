@@ -27,6 +27,7 @@ const game = {
 	startTimestamp: field(`startTimestamp`, TYPE.NUMBER),
 	changeCounter: field(`changeCounter`, TYPE.NUMBER),
 	ttl: field(`ttl`, TYPE.NUMBER),
+	creatorPlayerId: field(`creatorPlayerId`, TYPE.STRING),
 }
 
 module.exports = {

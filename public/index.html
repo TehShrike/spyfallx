@@ -259,7 +259,10 @@
 
 
 			const createGameId = async() => {
-				const { gameId } = await postWithErrorHandling(`/api/create`)
+				const { playerSecret } = await playerDeetzPromise
+				const { gameId } = await postWithErrorHandling(`/api/create`, {
+					playerSecret
+				})
 
 				return gameId
 			}

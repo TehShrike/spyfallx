@@ -150,8 +150,9 @@ function startServer(port) {
 				})
 			},
 			'/api/create': async context => {
+				const { playerSecret } = context.request.body
 				await runWithDynamo(async client => {
-					const gameId = await createGame(client)
+					const gameId = await createGame(client, playerSecret)
 
 					success(context, {
 						gameId,
