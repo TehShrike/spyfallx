@@ -1,10 +1,7 @@
 # project isn't finished without this
 
-- game screen: make it difficult to accidentally double-click the "start game".  Fade in the "start a new game" button?
 - Ability to remove players
 - It's still possible to cause unexpected errors to be thrown by sending bad input to some endpoints
-- add a robots.txt that blocks everything when deploying to staging
-	- add a `cp` command to the circle.yml file for the staging deploy
 - polish the schema creation script
 	- [Enable autoscaling](https://github.com/Signiant/dynamodb-autoscale-enabler)
 	- call [updateTimeToLive](https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB.html#updateTimeToLive-property) from the schema creation script

@@ -81,6 +81,9 @@ function startServer(port) {
 
 	app.use(createRouter({
 		GET: {
+			'/robots.txt': async context => {
+				context.body = process.env.UP_STAGE === 'production' ? '' : `User-agent: *\nDisallow: /\n`
+			},
 			'/build/:path(.+)': async context => {
 				await send(context, context.params.path, { root: buildPath })
 			},
