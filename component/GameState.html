@@ -76,7 +76,6 @@
 		<li
 			data-player-inactive={gameActive && !player.active}
 			data-first-player={firstPlayerId === player.playerId}
-			data-may-start={playerWhoMayHitStart.playerId === player.playerId}
 			data-current-player={player.playerId === playerId}
 			data-crossed-off={playerIsCrossedOff(player.playerId)}
 			on:click=togglePlayer(player.playerId)
@@ -161,11 +160,6 @@
 
 	[data-first-player=true]::after {
 		content: ' 1st';
-		color: var(--blue);
-		font-size: 0.9em;
-	}
-	[data-may-start=true]::after {
-		content: ' (starter)';
 		color: var(--blue);
 		font-size: 0.9em;
 	}
