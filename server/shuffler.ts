@@ -1,6 +1,6 @@
-const shuffle = require(`array-shuffle`)
+import shuffle from 'array-shuffle'
 
-module.exports = inputItems => {
+export default inputItems => {
 	let shuffled = shuffle(inputItems)
 
 	return () => {

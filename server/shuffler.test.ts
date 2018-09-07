@@ -1,5 +1,5 @@
-const test = require(`zora`)
-const makeShuffler = require(`./shuffler.js`)
+import test from 'zora'
+import makeShuffler from './shuffler'
 
 const roles = [ `a`, `b`, `c` ]
 const rolesSet = new Set(roles)

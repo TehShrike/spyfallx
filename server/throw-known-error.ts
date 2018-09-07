@@ -1,4 +1,4 @@
-module.exports = message => {
+export default message => {
 	const err = new Error(message)
 
 	err.known = true

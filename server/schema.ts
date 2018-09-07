@@ -1,20 +1,20 @@
-const TYPE = require(`./dynamodb/types.js`)
-const { makeFieldObject: field } = require(`./dynamodb/helpers`)
+import * as TYPE from './dynamodb/types.js'
+import { makeFieldObject as field } from './dynamodb/helpers'
 
-const playerSecret = {
+export const playerSecret = {
 	secret: field(`secret`, TYPE.STRING),
 	playerId: field(`playerId`, TYPE.STRING),
 	ttl: field(`ttl`, TYPE.NUMBER),
 }
 
-const player = {
+export const player = {
 	id: field(`id`, TYPE.STRING),
 	secret: field(`secret`, TYPE.STRING),
 	name: field(`name`, TYPE.STRING),
 	ttl: field(`ttl`, TYPE.NUMBER),
 }
 
-const game = {
+export const game = {
 	id: field(`id`, TYPE.STRING),
 	playerIds: field(`playerIds`, TYPE.STRING_SET),
 	playerIdsAssignedRoles: field(`playerIdsAssignedRoles`, TYPE.STRING_SET),
@@ -28,10 +28,4 @@ const game = {
 	changeCounter: field(`changeCounter`, TYPE.NUMBER),
 	ttl: field(`ttl`, TYPE.NUMBER),
 	creatorPlayerId: field(`creatorPlayerId`, TYPE.STRING),
-}
-
-module.exports = {
-	playerSecret,
-	player,
-	game,
 }

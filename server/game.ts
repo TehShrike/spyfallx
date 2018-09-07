@@ -1,26 +1,26 @@
-const combine = require(`combine-arrays`)
+import combine from 'combine-arrays'
 
-const reandom = require(`reandom`)
-const Die = require(`gamblers-dice`)
-const makeUuid = require(`just-uuid4`)
-const random = require(`random-int`)
-const generateSillyName = require(`sillyname`)
-const seedRandom = require(`seed-random`)
+import reandom from 'reandom'
+import Die from 'gamblers-dice'
+import makeUuid from 'just-uuid4'
+import random from 'random-int'
+import generateSillyName from 'sillyname'
+import seedRandom from 'seed-random'
 
-const locations = require(`../shared/locations.js`)
-const makeShuffler = require(`./shuffler.js`)
-const throwKnownError = require(`./throw-known-error.js`)
+import locations from '../shared/locations.js'
+import makeShuffler from './shuffler'
+import throwKnownError from './throw-known-error'
 
 const generateSillyNameFromSeed = seed => generateSillyName(seedRandom(seed))
 
-const TABLES = require(`./schema.js`)
+import * as TABLES from './schema'
 const {
 	playerSecret,
 	player,
 	game,
 } = TABLES
 
-const {
+import {
 	putItem,
 	getItem,
 	updateItem,
@@ -29,7 +29,7 @@ const {
 	getField,
 	makeSimpleExpression,
 	makeSetExpression,
-} = require(`./dynamodb/helpers.js`)
+} from './dynamodb/helpers'
 
 const SEED_NUMBER_SEPARATOR = ` `
 const SPY = `Spy`

@@ -37,7 +37,7 @@ const runWithDynamo = async fn => {
 	await fn(dynamoDb)
 }
 
-const success = (context, body) => context.body = Object.assign({
+const success = (context, body = {}) => context.body = Object.assign({
 	success: true,
 }, body)
 

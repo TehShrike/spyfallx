@@ -1,4 +1,4 @@
-const TYPE = require(`./types.js`)
+import * as TYPE from './types.js'
 
 const swich = (value, map) => (map[value] || map.def)()
 
@@ -12,7 +12,7 @@ const oMap = (object, fn) => {
 	return output
 }
 
-const serialize = (AttributeType, value) => swich(AttributeType, {
+export const serialize = (AttributeType, value) => swich(AttributeType, {
 	[TYPE.NUMBER]: () => value.toString(),
 	[TYPE.NUMBER_SET]: () => value.map(number => number.toString()),
 	[TYPE.STRING]: () => value.toString(),
@@ -23,8 +23,8 @@ const serialize = (AttributeType, value) => swich(AttributeType, {
 })
 
 const deserialize = (AttributeType, value) => swich(AttributeType, {
-	[TYPE.NUMBER]: () => parseFloat(value, 10),
-	[TYPE.NUMBER_SET]: () => value.map(str => parseFloat(str, 10)),
+	[TYPE.NUMBER]: () => parseFloat(value),
+	[TYPE.NUMBER_SET]: () => value.map(str => parseFloat(str)),
 	[TYPE.MAP]: () => oMap(value, object => object[TYPE.STRING]),
 	def: () => value,
 })
@@ -39,11 +39,11 @@ const dynamoFieldObject = fieldValues => Object.assign(
 	...fieldValues.map(({ field, value }) => dynamoFieldProperty(field, value))
 )
 
-const expressionValueName = AttributeName => `:` + AttributeName
-const expressionNameName = AttributeName => `#` + AttributeName
+export const expressionValueName = AttributeName => `:` + AttributeName
+export const expressionNameName = AttributeName => `#` + AttributeName
 
 
-const putItem = async(dynamoDb, { table, fieldValues }) => dynamoDb.putItem({
+export const putItem = async(dynamoDb, { table, fieldValues }) => dynamoDb.putItem({
 	TableName: table,
 	Item: dynamoFieldObject(fieldValues),
 }).promise()
@@ -56,7 +56,7 @@ const buildAttributeNameObject = fields => {
 	return o
 }
 
-const buildUpdateWithValues = ({ table, key, fieldValues }) => ({
+export const buildUpdateWithValues = ({ table, key, fieldValues }) => ({
 	TableName: table,
 	Key: dynamoFieldProperty(key.field, key.value),
 	ExpressionAttributeNames: buildAttributeNameObject(fieldValues.map(({ field }) => field)),
@@ -68,13 +68,13 @@ const buildUpdateWithValues = ({ table, key, fieldValues }) => ({
 	),
 })
 
-const makeSimpleExpression = (operation, ...fields) => operation + fields.map(
+export const makeSimpleExpression = (operation, ...fields) => operation + fields.map(
 	field => expressionNameName(field.AttributeName) + ` ` + expressionValueName(field.AttributeName)
 ).join(`, `)
 
-const makeSetExpression = (...fields) => `SET ` + fields.map(field => `${ expressionNameName(field.AttributeName) } = ${ expressionValueName(field.AttributeName) }`).join(`, `)
+export const makeSetExpression = (...fields) => `SET ` + fields.map(field => `${ expressionNameName(field.AttributeName) } = ${ expressionValueName(field.AttributeName) }`).join(`, `)
 
-const updateItem = async(dynamoDb, { table, key, fieldValues, expression }) => {
+export const updateItem = async(dynamoDb, { table, key, fieldValues, expression }) => {
 	try {
 		return await dynamoDb.updateItem(
 			Object.assign(
@@ -90,14 +90,14 @@ const updateItem = async(dynamoDb, { table, key, fieldValues, expression }) => {
 	}
 }
 
-const updateItemWithSet = async(dynamoDb, { table, key, fieldValues }) => updateItem(dynamoDb, {
+export const updateItemWithSet = async(dynamoDb, { table, key, fieldValues }) => updateItem(dynamoDb, {
 	table,
 	key,
 	fieldValues,
 	expression: makeSetExpression(...fieldValues.map(({ field }) => field)),
 })
 
-const getItem = async(dynamoDb, { tableName, key, resultFields }) => {
+export const getItem = async(dynamoDb, { tableName, key, resultFields }) => {
 	const data = await dynamoDb.getItem({
 		TableName: tableName,
 		Key: dynamoFieldObject([ key ]),
@@ -120,27 +120,11 @@ const getItem = async(dynamoDb, { tableName, key, resultFields }) => {
 	return output
 }
 
-const getField = (item, field) => item[field.AttributeName]
+export const getField = (item, field) => item[field.AttributeName]
 	? deserialize(field.AttributeType, item[field.AttributeName][field.AttributeType])
 	: null
 
-const makeFieldObject = (name, type) => ({
+export const makeFieldObject = (name, type) => ({
 	AttributeName: name,
 	AttributeType: type,
 })
-
-
-module.exports = {
-	putItem,
-	getItem,
-	updateItem,
-	updateItemWithSet,
-	buildUpdateWithValues,
-	expressionNameName,
-	expressionValueName,
-	serialize,
-	getField,
-	makeFieldObject,
-	makeSimpleExpression,
-	makeSetExpression,
-}
