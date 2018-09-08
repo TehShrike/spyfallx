@@ -1,4 +1,4 @@
-import shuffle from 'array-shuffle'
+import * as shuffle from 'array-shuffle'
 
 export default inputItems => {
 	let shuffled = shuffle(inputItems)

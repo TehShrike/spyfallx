@@ -1,15 +1,17 @@
-import combine from 'combine-arrays'
+import * as combine from 'combine-arrays'
 
-import reandom from 'reandom'
-import Die from 'gamblers-dice'
-import makeUuid from 'just-uuid4'
-import random from 'random-int'
-import generateSillyName from 'sillyname'
-import seedRandom from 'seed-random'
+import * as reandom from 'reandom'
+import * as Die from 'gamblers-dice'
+import * as makeUuid from 'just-uuid4'
+import * as random from 'random-int'
+import * as generateSillyName from 'sillyname'
+import * as seedRandom from 'seed-random'
 
-import locations from '../shared/locations.js'
+const locations = require('../shared/locations.js')
 import makeShuffler from './shuffler'
 import throwKnownError from './throw-known-error'
+
+import { PlayerSecret, Player, Game } from './schema'
 
 const generateSillyNameFromSeed = seed => generateSillyName(seedRandom(seed))
 
@@ -60,7 +62,7 @@ const getPlayerId = async(dynamoDb, secret) => getItem(dynamoDb, {
 	resultFields: [
 		playerSecret.playerId,
 	],
-}).then(playerSecretResult => playerSecretResult && playerSecretResult.playerId)
+}).then((playerSecretResult: PlayerSecret) => playerSecretResult && playerSecretResult.playerId)
 
 const getPlayerIdOrThrow = async(dynamoDb, secret) => {
 	const playerId = await getPlayerId(dynamoDb, secret)
@@ -215,7 +217,7 @@ const playerIsAuthedToGame = async(dynamoDb, gameId, secret) => {
 			resultFields: [
 				game.playerIds,
 			],
-		}).then(gameResult => gameResult ? gameResult.playerIds : []),
+		}).then((gameResult: Game) => gameResult ? gameResult.playerIds : []),
 	])
 
 	const playerIdsSet = new Set(playerIdsInGame)
@@ -261,7 +263,7 @@ const getGameChangeCounter = async(dynamoDb, gameId) => {
 		resultFields: [
 			game.changeCounter,
 		],
-	})
+	}) as Game
 
 	return gameResponse ? gameResponse.changeCounter : null
 }
@@ -279,7 +281,7 @@ const getGameInformation = async(dynamoDb, gameId) => {
 			game.changeCounter,
 			game.creatorPlayerId,
 		],
-	})
+	}) as Game
 
 	if (!gameResponse) {
 		return null
@@ -367,7 +369,7 @@ const getPlayerGameInformation = async(dynamoDb, gameId, secret) => {
 			game.location,
 			game.roles,
 		],
-	})
+	}) as Game
 
 	const role = roles && roles[playerId]
 
@@ -397,7 +399,7 @@ const startGame = async(dynamoDb, gameId) => {
 			resultFields: [
 				game.playerIds,
 			],
-		}).then(gameResponse => gameResponse.playerIds),
+		}).then((gameResponse: Game) => gameResponse.playerIds),
 
 		getRandomIndexUsingSeed(dynamoDb, { gameId, field: game.locationSeed, count: locations.length }),
 	])

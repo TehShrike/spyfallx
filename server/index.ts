@@ -1,15 +1,16 @@
+// @ts-ignore
 require(`hard-rejection/register`)
 require(`loud-rejection/register`)
 
-const Koa = require(`koa`)
-const createRouter = require(`koa-bestest-router`)
-const compress = require(`koa-compress`)
-const conditionalGet = require(`koa-conditional-get`)
-const etag = require(`koa-etag`)
-const send = require(`koa-send`)
-const koaBody = require(`koa-body`)
+const Koa = require('koa')
+const createRouter = require('koa-bestest-router')
+const compress = require('koa-compress')
+const conditionalGet = require('koa-conditional-get')
+const etag = require('koa-etag')
+const send = require('koa-send')
+const koaBody = require('koa-body')
 
-const dynamoDb = require(`./dynamodb-instance.js`)
+import dynamoDb from './dynamodb-instance'
 
 const relative = path => require(`path`).join(__dirname, path)
 const buildPath = relative(`../public/build`)

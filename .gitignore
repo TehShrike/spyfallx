@@ -1,4 +1,4 @@
 node_modules
 public/build
 shared-local-instance.db
-server/build
+server-build

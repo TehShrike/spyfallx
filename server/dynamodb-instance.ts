@@ -1,4 +1,4 @@
-import DynamoDB from 'aws-sdk/clients/dynamodb'
+const DynamoDB = require('aws-sdk/clients/dynamodb')
 
 const useAws = !!process.env.UP_STAGE
 

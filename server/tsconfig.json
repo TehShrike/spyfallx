@@ -1,18 +1,18 @@
 {
 	"compilerOptions": {
-		"sourceMap": true,
-		"declaration": true,
+		"sourceMap": false,
+		"declaration": false,
 		"allowUnreachableCode": false,
 		"module": "CommonJS",
 		"moduleResolution": "node",
 		"target": "ESNext",
 		"experimentalDecorators": true,
-		"emitDecoratorMetadata": true,
+		"emitDecoratorMetadata": false,
 		"noUnusedParameters": true,
 		"allowSyntheticDefaultImports": true,
 		"strict": false,
 		"baseUrl": "./server/",
-		"outDir": "./build/",
+		"outDir": "../server-build/",
 		"paths": {
 			"shared/*": [
 				"./shared/*"
@@ -55,6 +55,7 @@
 		"enable": true
 	},
 	"exclude": [
-		"node_modules"
+		"node_modules",
+		"node_modules/@types"
 	]
 }

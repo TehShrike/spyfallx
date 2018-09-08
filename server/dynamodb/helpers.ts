@@ -1,4 +1,4 @@
-import * as TYPE from './types.js'
+import TYPE, { DynamoDbTypeString } from './types'
 
 const swich = (value, map) => (map[value] || map.def)()
 
@@ -12,7 +12,9 @@ const oMap = (object, fn) => {
 	return output
 }
 
-export const serialize = (AttributeType, value) => swich(AttributeType, {
+type JsValue = string | object | number | Array<any>
+
+export const serialize = (AttributeType, value): JsValue => swich(AttributeType, {
 	[TYPE.NUMBER]: () => value.toString(),
 	[TYPE.NUMBER_SET]: () => value.map(number => number.toString()),
 	[TYPE.STRING]: () => value.toString(),
@@ -29,21 +31,43 @@ const deserialize = (AttributeType, value) => swich(AttributeType, {
 	def: () => value,
 })
 
-const dynamoFieldProperty = (field, value) => ({
-	[field.AttributeName]: {
-		[field.AttributeType]: serialize(field.AttributeType, value),
-	},
-})
+type DynamoValue = {
+	[x in DynamoDbTypeString]: JsValue
+}
 
-const dynamoFieldObject = fieldValues => Object.assign(
-	...fieldValues.map(({ field, value }) => dynamoFieldProperty(field, value))
-)
+type DynamoFieldProperty = {
+	[x in string]: DynamoValue
+}
+
+const dynamoFieldProperty = (field: Field, value: JsValue): DynamoFieldProperty => {
+	// wtf typescript?  This should all be legit
+	// @ts-ignore
+	const valuez: DynamoValue = {
+		[field.AttributeType]: serialize(field.AttributeType, value),
+	}
+
+	return {
+		[field.AttributeName]: valuez,
+	}
+}
+
+interface FieldValue {
+	field: Field,
+	value: any
+}
+
+type FieldValues = [FieldValue, ...FieldValue[]]
+const dynamoFieldObject = (fieldValues: FieldValues) => {
+	const fieldProperties = fieldValues.map(({ field, value }) => dynamoFieldProperty(field, value))
+
+	// @ts-ignore
+	return Object.assign(...fieldProperties)
+}
 
 export const expressionValueName = AttributeName => `:` + AttributeName
 export const expressionNameName = AttributeName => `#` + AttributeName
 
-
-export const putItem = async(dynamoDb, { table, fieldValues }) => dynamoDb.putItem({
+export const putItem = async(dynamoDb, { table, fieldValues }: { table: string, fieldValues: FieldValues }) => dynamoDb.putItem({
 	TableName: table,
 	Item: dynamoFieldObject(fieldValues),
 }).promise()
@@ -120,11 +144,16 @@ export const getItem = async(dynamoDb, { tableName, key, resultFields }) => {
 	return output
 }
 
-export const getField = (item, field) => item[field.AttributeName]
+export interface Field {
+	AttributeName: string,
+	AttributeType: DynamoDbTypeString,
+}
+
+export const getField = (item: object, field: Field) => item[field.AttributeName]
 	? deserialize(field.AttributeType, item[field.AttributeName][field.AttributeType])
 	: null
 
-export const makeFieldObject = (name, type) => ({
+export const makeFieldObject = (name: string, type: DynamoDbTypeString): Field => ({
 	AttributeName: name,
 	AttributeType: type,
 })
