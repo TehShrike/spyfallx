@@ -12,6 +12,7 @@
 		"allowSyntheticDefaultImports": true,
 		"strict": false,
 		"baseUrl": "./server/",
+		"outDir": "./build/",
 		"paths": {
 			"shared/*": [
 				"./shared/*"

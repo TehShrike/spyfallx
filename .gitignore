@@ -1,6 +1,4 @@
 node_modules
 public/build
 shared-local-instance.db
-server/**/*.js
-server/**/*.d.ts
-server/**/*.map
+server/build
