@@ -5,7 +5,7 @@ import * as Die from 'gamblers-dice'
 import * as makeUuid from 'just-uuid4'
 import * as random from 'random-int'
 import * as generateSillyName from 'sillyname'
-import * as seedRandom from 'seed-random'
+import seedRandom from 'seed-random'
 
 const locations = require('../shared/locations.js')
 import makeShuffler from './shuffler'
