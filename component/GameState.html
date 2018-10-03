@@ -132,18 +132,20 @@
 	</button>
 </div>
 
-<h3>Locations</h3>
-<ul>
-	{#each locationNames as locationName}
-		<li
-			data-current-location={location && locationName === location.name}
-			data-crossed-off={locationIsCrossedOff(locationName)}
-			on:click=toggleLocation(locationName)
-		>
-			{locationName}
-		</li>
-	{/each}
-</ul>
+{#if locationNames}
+	<h3>Locations</h3>
+	<ul>
+		{#each locationNames as locationName}
+			<li
+				data-current-location={location && locationName === location.name}
+				data-crossed-off={locationIsCrossedOff(locationName)}
+				on:click=toggleLocation(locationName)
+			>
+				{locationName}
+			</li>
+		{/each}
+	</ul>
+{/if}
 
 <style>
 	[data-player-inactive=true] {
@@ -269,7 +271,7 @@ export default {
 			location: null,
 			gameActive: null,
 			playersInRoom: [],
-			locationNames: [],
+			locationNames: null,
 			playerId: null,
 			firstPlayerId: null,
 			elapsedTimeMs: null,
@@ -394,7 +396,7 @@ export default {
 		},
 		start(startString) {
 			this.set({
-				timestampWhenStartWasPressed: this.get().activeGameStartTimestamp
+				timestampWhenStartWasPressed: this.get().activeGameStartTimestamp,
 			})
 			this.fire(startString)
 		},

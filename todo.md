@@ -12,9 +12,6 @@
 
 # would be nice to have
 
-- Spyfall 2 location/role list
-	- https://github.com/mpcovcd/spyfall/blob/master/spyfall/lib/locations2.js
-	- https://github.com/mpcovcd/spyfall/blob/master/spyfall/i18n/en.i18n.json
 - internationalization
 - a readme that gives a slightly better introduction - maybe with some of the rationale from the about page
 	- also include a link to the roadmap (this file), and information about how I will help you through the contribution process

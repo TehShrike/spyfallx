@@ -82,7 +82,7 @@ function startServer(port) {
 	app.use(createRouter({
 		GET: {
 			'/robots.txt': async context => {
-				context.body = process.env.UP_STAGE === 'production' ? '' : `User-agent: *\nDisallow: /\n`
+				context.body = process.env.UP_STAGE === `production` ? `` : `User-agent: *\nDisallow: /\n`
 			},
 			'/build/:path(.+)': async context => {
 				await send(context, context.params.path, { root: buildPath })
@@ -153,9 +153,9 @@ function startServer(port) {
 				})
 			},
 			'/api/create': async context => {
-				const { playerSecret } = context.request.body
+				const { playerSecret, locationId = `1` } = context.request.body
 				await runWithDynamo(async client => {
-					const gameId = await createGame(client, playerSecret)
+					const gameId = await createGame(client, playerSecret, locationId)
 
 					success(context, {
 						gameId,

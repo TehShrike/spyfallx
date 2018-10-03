@@ -38,8 +38,30 @@
 
 			<div data-when=first-choice>
 				<div class="center-row" >
-					<button type=button id=create-new-game>Create New Game</button>
+					<button type=button id=choose-location>Create New Game...</button>
 					<button type=button id=enter-game-id>Join Game...</button>
+				</div>
+			</div>
+
+			<div data-when=choose-location>
+				<div class="center-row">
+					<button type=button id=back class=gray>Back</button>
+				</div>
+
+				<label>
+					<span class="label-text">
+						Choose a set of locations:
+					</span>
+				</label>
+				<div class="center-row">
+					<button type=button id=create-game-location1>
+						<span class=emoji>1️⃣</span>
+						Original locations
+					</button>
+					<button type=button id=create-game-location2>
+						<span class=emoji>2️⃣</span>
+						Spyfall 2 locations
+					</button>
 				</div>
 			</div>
 
@@ -141,6 +163,13 @@
 				margin-right: 0;
 			}
 
+			.emoji {
+				font-weight: 400;
+				font-family: apple color emoji,segoe ui emoji,notocoloremoji,android emoji,emojisymbols,emojione mozilla,segoe ui symbol;
+				font-size: 24px;
+				padding-right: 16px;
+			}
+
 
 			@media (max-width: 500px) {
 				.center-row {
@@ -204,6 +233,10 @@
 				display: block;
 			}
 
+			[data-choose-location=true] [data-when=choose-location] {
+				display: block;
+			}
+
 			[data-enter-game-id=true] [data-when=enter-game-id] {
 				display: block;
 			}
@@ -220,8 +253,10 @@
 
 			const body = document.body
 
-			const CREATE_NEW_GAME_BUTTON_ID = `create-new-game`
+			const CREATE_GAME_LOCATION1 = `create-game-location1`
+			const CREATE_GAME_LOCATION2 = `create-game-location2`
 			const ENTER_GAME_ID_BUTTON_ID = `enter-game-id`
+			const CHOOSE_LOCATIONS_ID = `choose-location`
 			const JOIN_GAME_BUTTON_ID = `join-game`
 			const NAME_INPUT_ID = `player-name`
 			const GAME_ID_INPUT_ID = `game-id`
@@ -258,10 +293,11 @@
 			const playerDeetzPromise = handleError(getPlayerDeetz())
 
 
-			const createGameId = async() => {
+			const createGameId = async locationId => {
 				const { playerSecret } = await playerDeetzPromise
 				const { gameId } = await postWithErrorHandling(`/api/create`, {
-					playerSecret
+					playerSecret,
+					locationId,
 				})
 
 				return gameId
@@ -286,11 +322,17 @@
 				document.location = `game.html?gameId=${ gameId.toLowerCase() }`
 			}
 
-			on(CREATE_NEW_GAME_BUTTON_ID, `click`, async() => {
-				await setNameAndNavigateToGame({
-					gameId: await createGameId(),
+			const createGameListener = (id, locationId) => {
+				on(id, `click`, async() => {
+					await setNameAndNavigateToGame({
+						gameId: await createGameId(locationId),
+					})
 				})
-			})
+			}
+
+			createGameListener(CREATE_GAME_LOCATION1, `1`)
+			createGameListener(CREATE_GAME_LOCATION2, `2`)
+
 
 			on(JOIN_GAME_BUTTON_ID, `click`, async() => {
 				const gameId = document.getElementById(GAME_ID_INPUT_ID).value
@@ -307,9 +349,15 @@
 				document.getElementById(GAME_ID_INPUT_ID).focus()
 			})
 
+			on(CHOOSE_LOCATIONS_ID, `click`, async() => {
+				body.dataset.firstChoice = false
+				body.dataset.chooseLocation = true
+			})
+
 			on(`back`, `click`, async() => {
 				body.dataset.firstChoice = true
 				body.dataset.enterGameId = false
+				body.dataset.chooseLocation = false
 			})
 
 			init()

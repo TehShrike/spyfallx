@@ -7,9 +7,13 @@ const random = require(`random-int`)
 const generateSillyName = require(`sillyname`)
 const seedRandom = require(`seed-random`)
 
-const locations = require(`../shared/locations.js`)
 const makeShuffler = require(`./shuffler.js`)
 const throwKnownError = require(`./throw-known-error.js`)
+
+const LOCATIONS = {
+	1: require(`../shared/locations.js`),
+	2: require(`../shared/locations2.js`),
+}
 
 const generateSillyNameFromSeed = seed => generateSillyName(seedRandom(seed))
 
@@ -123,7 +127,11 @@ const getRandomIndexUsingSeed = async(dynamoDb, { gameId, field, count }) => {
 
 
 
-const createGame = async (dynamoDb, secret) => {
+const createGame = async(dynamoDb, secret, locationId) => {
+	if (!LOCATIONS[locationId]) {
+		throwKnownError(`No location found for id ${ locationId }`)
+	}
+
 	const creatorPlayerId = await getPlayerIdOrThrow(dynamoDb, secret)
 	const gameId = generateGameId()
 
@@ -133,7 +141,8 @@ const createGame = async (dynamoDb, secret) => {
 			{ field: game.id, value: gameId },
 			{ field: game.active, value: false },
 			{ field: game.changeCounter, value: 1 },
-			{ field: game.creatorPlayerId, value: creatorPlayerId }
+			{ field: game.creatorPlayerId, value: creatorPlayerId },
+			{ field: game.locationId, value: locationId },
 		],
 	})
 
@@ -278,6 +287,7 @@ const getGameInformation = async(dynamoDb, gameId) => {
 			game.playerIdsAssignedRoles,
 			game.changeCounter,
 			game.creatorPlayerId,
+			game.locationId,
 		],
 	})
 
@@ -293,6 +303,7 @@ const getGameInformation = async(dynamoDb, gameId) => {
 		changeCounter,
 		playerIdsAssignedRoles,
 		creatorPlayerId,
+		locationId,
 	} = gameResponse
 
 	const playerIdsAndNames = (playerIds && playerIds.length === 0)
@@ -328,6 +339,7 @@ const getGameInformation = async(dynamoDb, gameId) => {
 			playersInRoom: playerIdsAndNames,
 			changeCounter,
 			creatorPlayerId,
+			locationId,
 		}
 	}
 
@@ -349,6 +361,7 @@ const getGameInformation = async(dynamoDb, gameId) => {
 		firstPlayerId,
 		elapsedTimeMs,
 		startTimestamp,
+		locationId,
 	}
 }
 
@@ -390,17 +403,20 @@ const stopGame = async(dynamoDb, gameId) => updateItem(dynamoDb, {
 })
 
 const startGame = async(dynamoDb, gameId) => {
-	const [ playerIds, locationIndex ] = await Promise.all([
-		getItem(dynamoDb, {
-			tableName: `game`,
-			key: { field: game.id, value: gameId },
-			resultFields: [
-				game.playerIds,
-			],
-		}).then(gameResponse => gameResponse.playerIds),
+	const playerIdsAndLocation = await getItem(dynamoDb, {
+		tableName: `game`,
+		key: { field: game.id, value: gameId },
+		resultFields: [
+			game.playerIds,
+			game.locationId,
+		],
+	})
 
-		getRandomIndexUsingSeed(dynamoDb, { gameId, field: game.locationSeed, count: locations.length }),
-	])
+	const { playerIds, locationId } = playerIdsAndLocation
+
+	const locations = LOCATIONS[locationId]
+
+	const locationIndex = await getRandomIndexUsingSeed(dynamoDb, { gameId, field: game.locationSeed, count: locations.length })
 
 	const playerCount = playerIds.length
 
@@ -410,6 +426,7 @@ const startGame = async(dynamoDb, gameId) => {
 
 	const firstPlayerId = playerIds[random(playerCount - 1)]
 	const location = locations[locationIndex]
+
 	const getNextRole = makeShuffler(location.roles)
 
 	const spyIndex = await getRandomIndexUsingSeed(dynamoDb, { gameId, field: game.spySeed, count: playerIds.length })
@@ -439,8 +456,9 @@ const startGame = async(dynamoDb, gameId) => {
 			{ field: game.roles, value: playerRoleMap },
 			{ field: game.playerIdsAssignedRoles, value: playerIds },
 			{ field: game.changeCounter, value: 1 },
+			{ field: game.locationId, value: locationId },
 		],
-		expression: makeSetExpression(game.active, game.location, game.firstPlayerId, game.startTimestamp, game.roles, game.playerIdsAssignedRoles)
+		expression: makeSetExpression(game.active, game.location, game.firstPlayerId, game.startTimestamp, game.roles, game.playerIdsAssignedRoles, game.locationId)
 			+ ` ` + makeSimpleExpression(`ADD`, game.changeCounter),
 	})
 

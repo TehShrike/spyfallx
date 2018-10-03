@@ -28,6 +28,7 @@ const game = {
 	changeCounter: field(`changeCounter`, TYPE.NUMBER),
 	ttl: field(`ttl`, TYPE.NUMBER),
 	creatorPlayerId: field(`creatorPlayerId`, TYPE.STRING),
+	locationId: field(`locationId`, TYPE.STRING),
 }
 
 module.exports = {

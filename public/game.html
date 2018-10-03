@@ -94,7 +94,13 @@
 			import makeErrorHandler from './handle-error.js'
 
 			import GameState from './build/game-state.js'
-			import locationMap from './build/locations.js'
+			import locationMap1 from './build/locations.js'
+			import locationMap2 from './build/locations2.js'
+
+			const LOCATIONS = {
+				1: locationMap1,
+				2: locationMap2,
+			}
 
 			const handleError = makeErrorHandler(document.getElementById(`error-message`))
 
@@ -136,7 +142,6 @@
 
 				view.set({
 					playerId,
-					locationNames: Object.keys(locationMap),
 				})
 
 				await postWithErrorHandling(`/api/join-game`, {
@@ -159,7 +164,10 @@
 							changeCounter,
 							startTimestamp,
 							creatorPlayerId,
+							locationId,
 						} = gameResponse
+
+						const locationMap = LOCATIONS[locationId]
 
 						let locationObject = null
 						let role = null
@@ -174,6 +182,7 @@
 								crossedOffPlayers: {},
 								crossedOffLocations: {},
 								activeGameStartTimestamp: startTimestamp,
+								locationNames: Object.keys(locationMap),
 							})
 
 							view.load()
