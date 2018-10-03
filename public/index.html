@@ -45,7 +45,7 @@
 
 			<div data-when=choose-location>
 				<div class="center-row">
-					<button type=button id=back class=gray>Back</button>
+					<button type=button id=back-from-choose-location class=gray>Back</button>
 				</div>
 
 				<label>
@@ -67,7 +67,7 @@
 
 			<div data-when=enter-game-id>
 				<div class="center-row">
-					<button type=button id=back class=gray>Back</button>
+					<button type=button id=back-from-enter-game-id class=gray>Back</button>
 				</div>
 
 				<label>
@@ -354,10 +354,14 @@
 				body.dataset.chooseLocation = true
 			})
 
-			on(`back`, `click`, async() => {
+			on(`back-from-choose-location`, `click`, async() => {
+				body.dataset.firstChoice = true
+				body.dataset.chooseLocation = false
+			})
+
+			on(`back-from-enter-game-id`, `click`, async() => {
 				body.dataset.firstChoice = true
 				body.dataset.enterGameId = false
-				body.dataset.chooseLocation = false
 			})
 
 			init()
