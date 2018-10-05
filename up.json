@@ -15,7 +15,7 @@
 			"zone": false,
 			"lambda": {
 				"warm": true,
-				"warm_count": 5
+				"warm_count": 10
 			}
 		}
 	},
