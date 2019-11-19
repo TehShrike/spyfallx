@@ -31,6 +31,7 @@
 				"dynamodb:UpdateItem",
 				"dynamodb:BatchGetItem"
 			]
-		}]
+		}],
+		"runtime": "nodejs12.x"
 	}
 }
